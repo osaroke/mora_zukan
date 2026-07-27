@@ -8,171 +8,241 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="母音図鑑">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230d0f17'/%3E%3Ccircle cx='256' cy='200' r='90' fill='none' stroke='%237aa2f7' stroke-width='18'/%3E%3Ctext x='256' y='220' font-size='110' text-anchor='middle' dominant-baseline='middle' fill='%237aa2f7' font-family='sans-serif' font-weight='bold'%3E母%3C/text%3E%3Ctext x='256' y='360' font-size='52' text-anchor='middle' fill='%23bb9af7' font-family='sans-serif'%3Ea i u e o%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230d0f17'/%3E%3Ccircle cx='256' cy='190' r='95' fill='none' stroke='%237aa2f7' stroke-width='16'/%3E%3Ctext x='256' y='215' font-size='115' text-anchor='middle' dominant-baseline='middle' fill='%237aa2f7' font-family='sans-serif' font-weight='bold'%3E母%3C/text%3E%3Ctext x='256' y='370' font-size='55' text-anchor='middle' fill='%23bb9af7' font-family='sans-serif'%3Ea i u e o%3C/text%3E%3C/svg%3E">
 <meta name="description" content="作詞用 モーラ・母音の登録と押韻検索ツール">
 <title>モーラ・母音図鑑</title>
 <style>
-  :root{
-    --bg:#11131a;--panel:#191c26;--panel2:#1f2330;--line:#2c3142;
-    --text:#e7e9f0;--sub:#8b90a3;--accent:#7aa2f7;--accent2:#bb9af7;
-    --a:#f7768e;--i:#e0af68;--u:#9ece6a;--e:#7dcfff;--o:#bb9af7;--n:#565f89;
-    --safe-top:env(safe-area-inset-top,0px);
-    --safe-bottom:env(safe-area-inset-bottom,0px);
-    --safe-left:env(safe-area-inset-left,0px);
-    --safe-right:env(safe-area-inset-right,0px);
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html{height:100%;}
-  body{margin:0;font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
-    background:var(--bg);color:var(--text);min-height:100%;
-    transition:background .15s,color .15s;
-    padding-top:var(--safe-top);
-    padding-left:var(--safe-left);
-    padding-right:var(--safe-right);}
-  /* ── スタンドアロン時: ノッチ対応ヘッダー ── */
-  @media(display-mode:standalone){
-    body{padding-top:max(var(--safe-top),0px);}
-    .standalone-only{display:flex!important;}
-    .browser-only{display:none!important;}
-  }
-  .standalone-only{display:none;}
-  /* ── ヘッダー ── */
-  header{padding:11px 18px 9px;border-bottom:1px solid var(--line);
-    display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
-    position:sticky;top:0;z-index:100;
-    background:var(--bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
-  .header-left{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-  header h1{font-size:1.1rem;margin:0;letter-spacing:.04em;}
-  .sub-title{margin:0;color:var(--sub);font-size:.74rem;}
-  .header-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-  /* ── バッジ群 ── */
-  .status-badge{font-size:.68rem;padding:3px 8px;border-radius:10px;
-    background:var(--panel2);border:1px solid var(--line);color:var(--sub);
-    white-space:nowrap;transition:color .2s,border-color .2s;}
-  .status-badge.ok{color:var(--u);border-color:var(--u);}
-  .status-badge.busy{color:var(--accent);border-color:var(--accent);}
-  .status-badge.err{color:var(--a);border-color:var(--a);}
-  .status-badge.offline{color:var(--i);border-color:var(--i);}
-  /* ── インストールボタン ── */
-  #btn-install{
-    background:var(--accent);color:#0d0f17;border:none;border-radius:12px;
-    padding:5px 12px;font-size:.72rem;cursor:pointer;font-weight:700;
-    animation:pulse 2s infinite;}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.75;}}
-  /* ── 更新バナー ── */
-  #update-banner{
-    display:none;position:fixed;bottom:calc(var(--safe-bottom) + 12px);left:50%;
-    transform:translateX(-50%);z-index:9999;
-    background:var(--accent);color:#0d0f17;border:none;border-radius:20px;
-    padding:10px 20px;font-size:.82rem;font-weight:700;cursor:pointer;
-    box-shadow:0 4px 20px rgba(0,0,0,.4);}
-  /* ── ファイルボタン ── */
-  .btn-file{background:var(--panel2);color:var(--sub);border:1px solid var(--line);
-    border-radius:12px;padding:4px 9px;font-size:.70rem;cursor:pointer;}
-  .btn-file:hover{border-color:var(--accent);color:var(--text);}
-  /* ── テーマ ── */
-  .theme-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-  .theme-toggle-btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);
-    border-radius:14px;padding:5px 11px;font-size:.73rem;cursor:pointer;}
-  .swatches{display:flex;gap:4px;}
-  .swatch-dot{width:17px;height:17px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;}
-  .swatch-dot.active{border-color:var(--text);}
-  /* ── ナビ ── */
-  nav{display:flex;gap:4px;padding:10px 18px 0;flex-wrap:wrap;}
-  nav button{background:var(--panel);border:1px solid var(--line);color:var(--sub);
-    padding:6px 12px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.80rem;}
-  nav button.active{background:var(--panel2);color:var(--text);border-bottom:2px solid var(--accent);}
-  /* ── メイン ── */
-  main{padding:13px 18px 80px;max-width:1100px;margin:0 auto;}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
-    padding:14px;margin-bottom:12px;}
-  .panel h2{margin:0 0 10px;font-size:.91rem;color:var(--accent);}
-  .row{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end;}
-  .field{display:flex;flex-direction:column;gap:4px;}
-  .field label{font-size:.67rem;color:var(--sub);}
-  input[type=text],textarea,select{
-    background:var(--panel2);border:1px solid var(--line);color:var(--text);
-    border-radius:6px;padding:7px 9px;font-size:.88rem;outline:none;
-    -webkit-appearance:none;}
-  input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent);}
-  textarea{resize:vertical;min-height:54px;font-family:inherit;}
-  button.btn{background:var(--accent);color:#10121a;border:none;border-radius:6px;
-    padding:8px 14px;font-size:.84rem;cursor:pointer;font-weight:600;}
-  button.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line);}
-  button.btn.ghost{background:transparent;color:var(--sub);border:1px solid var(--line);}
-  button.btn:hover{filter:brightness(1.08);}
-  button.small{padding:3px 7px;font-size:.70rem;border-radius:4px;cursor:pointer;
-    border:1px solid var(--line);background:var(--panel2);color:var(--sub);}
-  button.small:hover{filter:brightness(1.1);}
-  button.small.fav-on{color:#f7c948;border-color:#f7c948;}
-  button.small.used-on{color:var(--u);border-color:var(--u);}
-  table{width:100%;border-collapse:collapse;font-size:.82rem;}
-  th,td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:left;}
-  th{color:var(--sub);font-weight:500;font-size:.70rem;}
-  tr:hover td{background:rgba(127,127,127,0.10);}
-  .vowel-chip{display:inline-flex;align-items:center;justify-content:center;
-    width:21px;height:21px;border-radius:50%;font-size:.73rem;font-weight:700;color:#0e0f14;}
-  .v-a{background:var(--a);}.v-i{background:var(--i);}.v-u{background:var(--u);}
-  .v-e{background:var(--e);}.v-o{background:var(--o);}.v-n{background:var(--n);color:#cfd2e2;}
-  .filterbar{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;align-items:center;}
-  .filterbar button{border-radius:14px;padding:4px 10px;font-size:.73rem;}
-  .filterbar button.active{outline:2px solid var(--text);}
-  .tag-filterbar{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;}
-  .tag-chip{display:inline-flex;align-items:center;gap:3px;background:var(--panel2);
-    border:1px solid var(--line);border-radius:10px;padding:2px 7px;font-size:.68rem;cursor:pointer;color:var(--sub);}
-  .tag-chip.active{border-color:var(--accent2);color:var(--accent2);}
-  .tag-chip-plain{background:var(--panel2);border:1px solid var(--line);border-radius:7px;
-    padding:1px 6px;font-size:.67rem;color:var(--sub);display:inline-block;margin:1px;}
-  .sort-bar{display:flex;gap:7px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}
-  .sort-bar label{font-size:.68rem;color:var(--sub);}
-  .pager{display:flex;gap:5px;align-items:center;margin-top:8px;flex-wrap:wrap;}
-  .pager span{font-size:.72rem;color:var(--sub);}
-  .empty{color:var(--sub);font-size:.80rem;padding:7px 2px;}
-  .seq{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
-  .seq .unit{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:30px;}
-  .seq .mora{font-size:.80rem;}
-  .status{font-size:.73rem;color:var(--sub);margin-top:5px;min-height:1em;}
-  .status.ok{color:var(--u);}.status.err{color:var(--a);}
-  hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
-  .count-badge{background:var(--panel2);color:var(--sub);border-radius:10px;padding:2px 6px;font-size:.68rem;}
-  .matchcol{display:flex;gap:3px;}
-  .matchcol span{width:15px;height:15px;border-radius:3px;display:inline-flex;align-items:center;
-    justify-content:center;font-size:.63rem;font-weight:700;color:#0e0f14;}
-  .cmp-grid{display:flex;gap:3px;overflow-x:auto;margin-top:10px;padding-bottom:4px;}
-  .cmp-col{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:30px;}
-  .cmp-mora{padding:3px 5px;border-radius:5px;font-size:.78rem;font-weight:600;
-    border:1px solid var(--line);background:var(--panel2);color:var(--text);
-    white-space:nowrap;min-width:26px;text-align:center;}
-  .cmp-match{background:rgba(115,218,202,.25);border-color:var(--u);}
-  .cmp-miss{background:rgba(247,118,142,.18);border-color:var(--a);}
-  .cmp-null{background:rgba(86,95,137,.25);border-color:var(--n);color:var(--sub);}
-  .cmp-empty{background:transparent;border-color:transparent;color:transparent;}
-  /* ── モバイル ── */
-  @media(max-width:640px){
-    header{padding:8px 10px;}main{padding:8px 10px 90px;}nav{padding:6px 10px 0;}
-    nav button{padding:5px 9px;font-size:.75rem;}
-    .panel{padding:10px;}
-    h1{font-size:.92rem!important;}.sub-title{display:none!important;}
-    .status-badge{font-size:.64rem;padding:2px 6px;}
-    th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none;}
-    input[type=text],select{font-size:16px;} /* iOSズームを防ぐ */
-  }
-  /* ── スタンドアロン時の下部ナビ（オプション） ── */
-  @media(display-mode:standalone)and(max-width:640px){
-    nav{
-      position:fixed;bottom:0;left:0;right:0;
-      padding:0 0 var(--safe-bottom);
-      background:var(--panel);border-top:1px solid var(--line);
-      border-radius:0;z-index:100;justify-content:space-around;
-    }
-    nav button{border-radius:0;border:none;padding:10px 4px 6px;flex:1;font-size:.70rem;}
-    nav button.active{border-bottom:none;border-top:2px solid var(--accent);}
-    main{padding-top:8px;padding-bottom:calc(70px + var(--safe-bottom));}
-  }
+:root{
+  --bg:#11131a;--panel:#191c26;--panel2:#1f2330;--line:#2c3142;
+  --text:#e7e9f0;--sub:#8b90a3;--accent:#7aa2f7;--accent2:#bb9af7;
+  --a:#f7768e;--i:#e0af68;--u:#9ece6a;--e:#7dcfff;--o:#bb9af7;--n:#565f89;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{margin:0;font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+  background:var(--bg);color:var(--text);transition:background .15s,color .15s;
+  padding-top:var(--safe-top);padding-left:var(--safe-left);padding-right:var(--safe-right);}
+
+/* ── ヘッダー ── */
+header{
+  padding:10px 16px 8px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;
+  background:var(--bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.header-left{display:flex;align-items:baseline;gap:10px;}
+h1{font-size:1.05rem;margin:0;letter-spacing:.04em;white-space:nowrap;}
+.sub-title{color:var(--sub);font-size:.72rem;margin:0;}
+.header-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.status-badge{font-size:.66rem;padding:2px 8px;border-radius:10px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--sub);
+  white-space:nowrap;transition:color .2s,border-color .2s;}
+.status-badge.ok{color:var(--u);border-color:var(--u);}
+.status-badge.busy{color:var(--accent);border-color:var(--accent);}
+.status-badge.err{color:var(--a);border-color:var(--a);}
+.status-badge.offline{color:var(--i);border-color:var(--i);}
+.btn-file{background:var(--panel2);color:var(--sub);border:1px solid var(--line);
+  border-radius:12px;padding:3px 9px;font-size:.68rem;cursor:pointer;}
+.btn-file:hover{border-color:var(--accent);color:var(--text);}
+#btn-install{background:var(--accent);color:#0d0f17;border:none;border-radius:12px;
+  padding:4px 11px;font-size:.70rem;cursor:pointer;font-weight:700;}
+.theme-controls{display:flex;align-items:center;gap:6px;}
+.theme-toggle-btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:14px;padding:4px 10px;font-size:.70rem;cursor:pointer;}
+.swatches{display:flex;gap:4px;}
+.swatch-dot{width:16px;height:16px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;}
+.swatch-dot.active{border-color:var(--text);}
+
+/* ── ナビ ── */
+nav{display:flex;gap:2px;padding:10px 14px 0;flex-wrap:nowrap;}
+nav button{
+  background:transparent;border:none;color:var(--sub);
+  padding:10px 18px 8px;border-radius:10px 10px 0 0;cursor:pointer;
+  transition:color .18s,background .18s;
+  min-width:54px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;
+  position:relative;user-select:none;-webkit-user-select:none;
+  border-bottom:2px solid transparent;}
+nav button svg{width:22px;height:22px;stroke:currentColor;
+  transition:stroke .18s,filter .18s;display:block;}
+nav button::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:0;height:2px;background:var(--accent);border-radius:2px 2px 0 0;
+  transition:width .2s cubic-bezier(.4,0,.2,1);}
+nav button:hover{color:var(--text);background:var(--panel);}
+nav button.active{color:var(--accent);}
+nav button.active svg{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 60%,transparent));}
+nav button.active::after{width:70%;}
+
+/* ── メイン ── */
+main{padding:12px 16px 80px;max-width:980px;margin:0 auto;}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:14px;margin-bottom:12px;}
+.panel h2{margin:0 0 10px;font-size:.88rem;color:var(--accent);}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:.66rem;color:var(--sub);}
+input[type=text],textarea,select{
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  border-radius:6px;padding:7px 9px;font-size:.88rem;outline:none;
+  -webkit-appearance:none;transition:border-color .15s;}
+input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:52px;font-family:inherit;}
+button.btn{background:var(--accent);color:#10121a;border:none;border-radius:6px;
+  padding:8px 14px;font-size:.83rem;cursor:pointer;font-weight:600;}
+button.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line);}
+button.btn.ghost{background:transparent;color:var(--sub);border:1px solid var(--line);}
+button.btn:hover{filter:brightness(1.08);}
+button.small{padding:3px 7px;font-size:.69rem;border-radius:4px;cursor:pointer;
+  border:1px solid var(--line);background:var(--panel2);color:var(--sub);}
+button.small:hover{filter:brightness(1.1);}
+button.small.fav-on{color:#f7c948;border-color:#f7c948;}
+button.small.used-on{color:var(--u);border-color:var(--u);}
+
+/* ── 検索UI ── */
+.search-hero{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:20px 18px 14px;margin-bottom:14px;}
+.search-hero-title{font-size:.76rem;color:var(--sub);margin:0 0 10px;}
+.search-input-wrap{position:relative;margin-bottom:12px;}
+.search-input-wrap input{
+  width:100%;padding:12px 44px 12px 16px;font-size:1.05rem;border-radius:8px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);outline:none;
+  transition:border-color .15s,box-shadow .15s;}
+.search-input-wrap input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(122,162,247,.18);}
+.search-input-wrap .search-clear{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--sub);cursor:pointer;font-size:1rem;padding:4px;
+  display:none;}
+.search-input-wrap .search-clear.visible{display:block;}
+.search-mode-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0;}
+.mode-btn{
+  padding:5px 14px;border-radius:20px;font-size:.76rem;cursor:pointer;
+  background:var(--panel2);border:1px solid var(--line);color:var(--sub);
+  transition:all .15s;}
+.mode-btn.active{
+  background:var(--accent);color:#10121a;border-color:var(--accent);font-weight:700;}
+.search-hint{
+  font-size:.70rem;color:var(--sub);margin-top:10px;
+  line-height:1.6;}
+.search-hint code{
+  color:var(--accent2);background:var(--panel2);border-radius:4px;
+  padding:1px 5px;font-size:.70rem;}
+
+/* ── 検索結果 ── */
+.results-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+.results-count{font-size:.74rem;color:var(--sub);}
+.result-cards{display:flex;flex-direction:column;gap:6px;}
+.result-card{
+  display:flex;align-items:center;gap:10px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  padding:9px 12px;cursor:default;transition:border-color .12s;}
+.result-card:hover{border-color:var(--accent2);}
+.rc-hyouki{font-size:1.1rem;font-weight:700;min-width:60px;}
+.rc-yomi{font-size:.80rem;color:var(--sub);min-width:80px;}
+.rc-vowel{}
+.rc-pattern{font-family:monospace;font-size:.76rem;color:var(--accent2);
+  letter-spacing:.08em;min-width:70px;}
+.rc-tag{display:flex;gap:3px;flex-wrap:wrap;flex:1;}
+.rc-match-count{
+  font-size:.70rem;color:var(--u);background:rgba(115,218,202,.15);
+  border:1px solid rgba(115,218,202,.3);border-radius:8px;padding:2px 7px;
+  white-space:nowrap;}
+.rc-actions{display:flex;gap:4px;align-items:center;margin-left:auto;flex-shrink:0;}
+.copy-btn{
+  padding:4px 9px;font-size:.72rem;border-radius:6px;cursor:pointer;
+  border:1px solid var(--line);background:var(--panel);color:var(--sub);}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+.copy-btn.copied{border-color:var(--u);color:var(--u);}
+
+/* ── 图鑑テーブル ── */
+table{width:100%;border-collapse:collapse;font-size:.81rem;}
+th,td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:left;}
+th{color:var(--sub);font-weight:500;font-size:.69rem;}
+tr:hover td{background:rgba(127,127,127,0.09);}
+.vowel-chip{display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;font-size:.72rem;font-weight:700;color:#0e0f14;}
+.v-a{background:var(--a);}.v-i{background:var(--i);}.v-u{background:var(--u);}
+.v-e{background:var(--e);}.v-o{background:var(--o);}.v-n{background:var(--n);color:#cfd2e2;}
+.filterbar{display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap;align-items:center;}
+.filterbar button{border-radius:14px;padding:4px 10px;font-size:.73rem;}
+.filterbar button.active{outline:2px solid var(--text);}
+.tag-filterbar{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;}
+.tag-chip{display:inline-flex;align-items:center;gap:2px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:10px;padding:2px 7px;font-size:.67rem;cursor:pointer;color:var(--sub);}
+.tag-chip.active{border-color:var(--accent2);color:var(--accent2);}
+.tag-chip-plain{background:var(--panel2);border:1px solid var(--line);border-radius:7px;
+  padding:1px 5px;font-size:.65rem;color:var(--sub);display:inline-block;margin:1px;}
+.sort-bar{display:flex;gap:7px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}
+.sort-bar label{font-size:.67rem;color:var(--sub);}
+.pager{display:flex;gap:5px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+.pager span{font-size:.70rem;color:var(--sub);}
+.empty{color:var(--sub);font-size:.80rem;padding:8px 2px;}
+.seq{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.seq .unit{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:28px;}
+.seq .mora{font-size:.78rem;}
+.status{font-size:.72rem;color:var(--sub);margin-top:5px;min-height:1em;}
+.status.ok{color:var(--u);}.status.err{color:var(--a);}
+hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
+.count-badge{background:var(--panel2);color:var(--sub);border-radius:10px;padding:2px 6px;font-size:.67rem;}
+.cmp-grid{display:flex;gap:3px;overflow-x:auto;margin-top:9px;padding-bottom:4px;}
+.cmp-col{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:28px;}
+.cmp-mora{padding:3px 5px;border-radius:5px;font-size:.76rem;font-weight:600;
+  border:1px solid var(--line);background:var(--panel2);color:var(--text);
+  white-space:nowrap;min-width:24px;text-align:center;}
+.cmp-match{background:rgba(115,218,202,.25);border-color:var(--u);}
+.cmp-miss{background:rgba(247,118,142,.18);border-color:var(--a);}
+.cmp-null{background:rgba(86,95,137,.25);border-color:var(--n);color:var(--sub);}
+.cmp-empty{background:transparent;border-color:transparent;color:transparent;}
+/* PWA */
+#update-banner{display:none;position:fixed;bottom:calc(var(--safe-bottom)+10px);left:50%;
+  transform:translateX(-50%);z-index:9999;background:var(--accent);color:#0d0f17;border:none;
+  border-radius:20px;padding:9px 18px;font-size:.80rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);}
+/* モバイル */
+@media(max-width:640px){
+  header{padding:7px 10px;}main{padding:7px 10px 90px;}
+  .panel{padding:10px;}.sub-title{display:none;}
+  .search-hero{padding:14px 12px 10px;}
+  .search-input-wrap input{font-size:16px;padding:10px 40px 10px 12px;}
+  .rc-pattern{display:none;}.rc-tag{display:none;}
+  th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none;}
+  input[type=text],select{font-size:16px;}
+}
+@media(display-mode:standalone){
+  body{padding-top:max(var(--safe-top),8px);}
+}
+/* ボトムナビ（モバイル共通） */
+@media(max-width:640px){
+  nav{position:fixed;bottom:0;left:0;right:0;
+    padding:8px 0 max(var(--safe-bottom),8px);
+    background:rgba(var(--panel-rgb,25,28,38),.82);
+    backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);
+    border-top:1px solid var(--line);border-radius:0;z-index:100;
+    justify-content:space-around;gap:0;}
+  nav button{
+    border-radius:10px;border:none;
+    padding:8px 12px 6px;flex:1;min-width:unset;
+    border-bottom:2px solid transparent;}
+  nav button svg{width:26px;height:26px;}
+  nav button::after{bottom:2px;}
+  nav button.active::after{width:24px;}
+  nav button.active svg{filter:drop-shadow(0 0 7px color-mix(in srgb,var(--accent) 70%,transparent));}
+  main{padding-top:7px;padding-bottom:calc(76px + var(--safe-bottom));}
+}
+@media(display-mode:standalone)and(max-width:640px){
+  nav{padding-bottom:max(var(--safe-bottom),12px);}
+}
 </style>
 </head>
 <body>
-<!-- PWA: 更新バナー -->
 <button id="update-banner">🔄 新しいバージョンが利用可能 — タップして更新</button>
 
 <header>
@@ -181,37 +251,177 @@
     <p class="sub-title">作詞用 ― モーラ・母音の登録と押韻検索</p>
   </div>
   <div class="header-right">
-    <span class="status-badge" id="online-status">🌐 オンライン</span>
+    <span class="status-badge" id="online-status" style="display:none;">✈ オフライン</span>
     <span class="status-badge" id="save-status">― 読込中</span>
-    <button class="btn-file" id="btn-select-file">📂 保存先</button>
+    <button class="btn-file" id="btn-select-file">📂</button>
     <button id="btn-install" style="display:none;">📲 インストール</button>
     <div class="theme-controls">
-      <button class="theme-toggle-btn" id="btn-theme-toggle">🌙 ダーク</button>
+      <button class="theme-toggle-btn" id="btn-theme-toggle">🌙</button>
       <div class="swatches" id="accent-swatches"></div>
     </div>
   </div>
 </header>
 
 <nav>
-  <button data-tab="register" class="active">登録</button>
-  <button data-tab="list">図鑑</button>
-  <button data-tab="rhyme">押韻検索</button>
-  <button data-tab="data">保存・読込</button>
+  <button data-tab="search" class="active" title="検索">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="10.5" cy="10.5" r="6.5"/>
+      <line x1="15.5" y1="15.5" x2="21" y2="21"/>
+    </svg>
+  </button>
+  <button data-tab="list" title="図鑑">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="18" rx="1.5"/>
+      <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+      <rect x="13" y="14" width="8" height="7" rx="1.5"/>
+    </svg>
+  </button>
+  <button data-tab="register" title="登録">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/>
+      <line x1="14" y1="6" x2="18" y2="10"/>
+    </svg>
+  </button>
+  <button data-tab="data" title="データ">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="6" rx="8" ry="3"/>
+      <path d="M4 6v6a8 3 0 0 0 16 0V6"/>
+      <path d="M4 12v6a8 3 0 0 0 16 0v-6"/>
+    </svg>
+  </button>
 </nav>
 
 <main>
-<!-- 登録 -->
-<section id="tab-register" class="tabpanel">
+
+<!-- ========== 検索タブ ========== -->
+<section id="tab-search" class="tabpanel">
+
+  <!-- 大きな検索ボックス -->
+  <div class="search-hero">
+    <p class="search-hero-title">何を検索する？</p>
+    <div class="search-input-wrap">
+      <input type="text" id="main-search" placeholder="母音パターン / 歌詞（ひらがな）/ キーワード"
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <button class="search-clear" id="btn-search-clear">✕</button>
+    </div>
+    <!-- モード選択 -->
+    <div class="search-mode-bar">
+      <button class="mode-btn active" data-mode="vowel">母音パターン</button>
+      <button class="mode-btn" data-mode="consonant">子音パターン</button>
+      <button class="mode-btn" data-mode="lyric">歌詞解析</button>
+      <button class="mode-btn" data-mode="keyword">キーワード</button>
+    </div>
+    <div class="search-hint" id="search-hint">
+      母音パターン例: <code>aiai</code>（さいわい・さいかい系）　<code>ua</code>（夢・空系）　<code>oio</code>（恋心系）
+    </div>
+  </div>
+
+  <!-- 2行比較（コンパクト） -->
+  <div class="panel" id="compare-panel" style="display:none;">
+    <h2 style="display:flex;align-items:center;justify-content:space-between;">
+      2行比較
+      <button class="btn ghost" style="font-size:.68rem;padding:3px 8px;" id="btn-compare-close">閉じる</button>
+    </h2>
+    <div class="row">
+      <div class="field" style="flex:1;min-width:160px;">
+        <label>行A（ひらがな読み）</label>
+        <input type="text" id="cmp-a" placeholder="あいたいよ" autocomplete="off">
+      </div>
+      <div class="field" style="flex:1;min-width:160px;">
+        <label>行B（ひらがな読み）</label>
+        <input type="text" id="cmp-b" placeholder="かえりたい" autocomplete="off">
+      </div>
+      <button class="btn secondary" id="btn-compare">比較</button>
+    </div>
+    <div id="cmp-result" style="margin-top:9px;"></div>
+  </div>
+
+  <!-- 歌詞解析結果（モード=lyric のみ表示） -->
+  <div class="panel" id="lyric-panel" style="display:none;">
+    <h2>歌詞の母音分析</h2>
+    <div id="rhyme-seq" class="seq"></div>
+    <div style="margin-top:7px;font-size:.80rem;">
+      母音パターン: <code id="rhyme-pattern" style="color:var(--accent);">―</code>
+    </div>
+  </div>
+
+  <!-- 結果エリア -->
+  <div id="search-results-area">
+    <div class="empty" id="search-initial-msg" style="padding:20px 4px;text-align:center;color:var(--sub);">
+      <div style="font-size:2rem;margin-bottom:8px;">🎵</div>
+      <div>母音パターンや歌詞を入力して押韻を探そう</div>
+      <div style="font-size:.74rem;margin-top:8px;">
+        <span style="color:var(--accent);">aiai</span>、
+        <span style="color:var(--accent);">oiu</span>、
+        <span style="color:var(--accent);">aiueo</span> など
+      </div>
+    </div>
+    <div id="search-results" style="display:none;">
+      <div class="results-header">
+        <span class="results-count" id="results-count"></span>
+        <button class="btn ghost" style="font-size:.70rem;padding:3px 9px;" id="btn-open-compare">⇔ 2行比較</button>
+      </div>
+      <div class="result-cards" id="result-cards"></div>
+      <div class="pager" id="search-pager"></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ========== 図鑑タブ ========== -->
+<section id="tab-list" class="tabpanel" style="display:none;">
+  <div class="panel">
+    <h2>登録済みモーラ <span class="count-badge" id="list-count">0件</span></h2>
+    <div class="filterbar" id="vowel-filterbar"></div>
+    <div class="filterbar" id="flag-filterbar">
+      <button id="btn-fav-filter" style="background:var(--panel2);color:var(--sub);border:1px solid var(--line);">⭐ お気に入り</button>
+      <button id="btn-used-filter" style="background:var(--panel2);color:var(--sub);border:1px solid var(--line);">✓ 使用済み</button>
+      <button id="btn-clear-filters" class="btn ghost" style="font-size:.68rem;padding:3px 8px;">クリア</button>
+    </div>
+    <div class="tag-filterbar" id="tag-filterbar"></div>
+    <div class="sort-bar">
+      <label>ソート</label>
+      <select id="sort-select">
+        <option value="id-asc">登録順 ↑</option>
+        <option value="id-desc">登録順 ↓</option>
+        <option value="hyouki-asc">表記 A→Z</option>
+        <option value="yomi-asc">読み あ→ん</option>
+        <option value="vowel-asc">末尾母音</option>
+      </select>
+      <div class="field" style="margin-left:5px;">
+        <label>行</label>
+        <select id="gyou-filter"><option value="">すべて</option></select>
+      </div>
+      <div class="field" style="flex:1;min-width:130px;">
+        <label>キーワード</label>
+        <input type="text" id="search-box" placeholder="表記・読み・タグ" autocomplete="off">
+      </div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>表記</th><th>読み</th><th>末尾母音</th>
+        <th>母音P</th><th>子音P</th>
+        <th>タグ・メモ</th><th>⭐✓</th><th>操作</th>
+      </tr></thead>
+      <tbody id="list-body"></tbody>
+    </table>
+    <div class="empty" id="list-empty" style="display:none;">該当なし。</div>
+    <div class="pager" id="list-pager"></div>
+  </div>
+</section>
+
+<!-- ========== 登録タブ ========== -->
+<section id="tab-register" class="tabpanel" style="display:none;">
   <div class="panel">
     <h2>モーラを登録</h2>
     <div class="row">
       <div class="field">
         <label>表記</label>
-        <input type="text" id="in-hyouki" placeholder="例: 香" style="width:90px;" autocomplete="off" autocorrect="off">
+        <input type="text" id="in-hyouki" placeholder="例: 香" style="width:86px;" autocomplete="off" autocorrect="off">
       </div>
       <div class="field">
         <label>読み（ひらがな or ローマ字）</label>
-        <input type="text" id="in-yomi" placeholder="かおり / kaori" style="width:155px;" autocomplete="off" autocorrect="off" autocapitalize="none">
+        <input type="text" id="in-yomi" placeholder="かおり / kaori" style="width:150px;" autocomplete="off" autocorrect="off" autocapitalize="none">
       </div>
       <div class="field">
         <label>母音上書き</label>
@@ -227,153 +437,50 @@
       </div>
       <div class="field">
         <label>メモ</label>
-        <input type="text" id="in-memo" placeholder="任意" style="width:110px;" autocomplete="off">
+        <input type="text" id="in-memo" placeholder="任意" style="width:100px;" autocomplete="off">
       </div>
       <div class="field">
         <label>タグ（カンマ区切り）</label>
-        <input type="text" id="in-tags" placeholder="感情,強め" style="width:120px;" autocomplete="off">
+        <input type="text" id="in-tags" placeholder="感情,強め" style="width:110px;" autocomplete="off">
       </div>
       <button class="btn" id="btn-add">追加</button>
     </div>
     <div class="status" id="register-status"></div>
     <hr class="sep">
-    <div style="font-size:.76rem;color:var(--sub);">
+    <div style="font-size:.74rem;color:var(--sub);">
       プレビュー: <span id="preview-vowel">―</span>
-      &nbsp;<span id="preview-hira" style="color:var(--accent2);font-size:.80rem;"></span>
+      &nbsp;<span id="preview-hira" style="color:var(--accent2);font-size:.78rem;"></span>
     </div>
   </div>
 </section>
 
-<!-- 図鑑 -->
-<section id="tab-list" class="tabpanel" style="display:none;">
-  <div class="panel">
-    <h2>登録済みモーラ <span class="count-badge" id="list-count">0件</span></h2>
-    <div class="filterbar" id="vowel-filterbar"></div>
-    <div class="filterbar" id="flag-filterbar">
-      <button id="btn-fav-filter" style="background:var(--panel2);color:var(--sub);border:1px solid var(--line);">⭐ お気に入り</button>
-      <button id="btn-used-filter" style="background:var(--panel2);color:var(--sub);border:1px solid var(--line);">✓ 使用済み</button>
-      <button id="btn-clear-filters" class="btn ghost" style="font-size:.70rem;padding:3px 8px;">クリア</button>
-    </div>
-    <div class="tag-filterbar" id="tag-filterbar"></div>
-    <div class="sort-bar">
-      <label>ソート</label>
-      <select id="sort-select">
-        <option value="id-asc">登録順 ↑</option>
-        <option value="id-desc">登録順 ↓</option>
-        <option value="hyouki-asc">表記 A→Z</option>
-        <option value="hyouki-desc">表記 Z→A</option>
-        <option value="yomi-asc">読み あ→ん</option>
-        <option value="yomi-desc">読み ん→あ</option>
-        <option value="vowel-asc">末尾母音</option>
-      </select>
-      <div class="field" style="margin-left:6px;">
-        <label>行（子音）</label>
-        <select id="gyou-filter"><option value="">すべて</option></select>
-      </div>
-      <div class="field" style="flex:1;min-width:140px;">
-        <label>キーワード</label>
-        <input type="text" id="search-box" placeholder="表記・読み・メモ・タグ" autocomplete="off">
-      </div>
-    </div>
-    <table>
-      <thead><tr>
-        <th>表記</th><th>読み</th><th>末尾母音</th>
-        <th>母音P</th><th>子音P</th>
-        <th>タグ・メモ</th><th>⭐✓</th><th>操作</th>
-      </tr></thead>
-      <tbody id="list-body"></tbody>
-    </table>
-    <div class="empty" id="list-empty" style="display:none;">該当なし。</div>
-    <div class="pager" id="pager"></div>
-  </div>
-</section>
-
-<!-- 押韻 -->
-<section id="tab-rhyme" class="tabpanel" style="display:none;">
-  <div class="panel">
-    <h2>母音パターンで検索</h2>
-    <p style="color:var(--sub);font-size:.78rem;margin-top:-6px;">例: <code style="color:var(--accent2);">aiai</code> → 母音列 a-i-a-i の語</p>
-    <div class="row">
-      <div class="field" style="flex:1;min-width:200px;">
-        <label>母音パターン（a/i/u/e/o、んはn）</label>
-        <input type="text" id="pattern-input" placeholder="aiai" autocomplete="off" autocapitalize="none">
-      </div>
-      <button class="btn secondary" id="btn-pattern-search">検索</button>
-    </div>
-    <div id="pattern-results" style="margin-top:10px;" class="empty">パターンを入力して検索。</div>
-  </div>
-  <div class="panel">
-    <h2>子音パターンで検索</h2>
-    <p style="color:var(--sub);font-size:.78rem;margin-top:-6px;">例: <code style="color:var(--accent2);">skr</code> → さくら系。あ行は<code>-</code>、んは<code>n</code>、っは<code>q</code></p>
-    <div class="row">
-      <div class="field" style="flex:1;min-width:200px;">
-        <label>子音パターン</label>
-        <input type="text" id="consonant-pattern-input" placeholder="skr" autocomplete="off" autocapitalize="none">
-      </div>
-      <button class="btn secondary" id="btn-consonant-pattern-search">検索</button>
-    </div>
-    <div id="consonant-pattern-results" style="margin-top:10px;" class="empty">パターンを入力して検索。</div>
-  </div>
-  <div class="panel">
-    <h2>歌詞を解析</h2>
-    <div class="field" style="margin-bottom:8px;">
-      <label>歌詞（ひらがな読み）</label>
-      <textarea id="rhyme-input" placeholder="そらをみあげて" autocomplete="off" autocorrect="off"></textarea>
-    </div>
-    <button class="btn" id="btn-analyze">解析する</button>
-    <div id="rhyme-seq" class="seq"></div>
-    <div style="margin-top:7px;font-size:.82rem;">
-      母音パターン: <code id="rhyme-pattern" style="color:var(--accent);">―</code>
-    </div>
-    <hr class="sep">
-    <h2>末尾母音が一致する登録語 <small style="font-size:.68rem;color:var(--sub);">（末尾一致モーラ数付き）</small></h2>
-    <div id="rhyme-matches" class="empty">解析するとここに候補が出る。</div>
-  </div>
-  <div class="panel">
-    <h2>2行比較（押韻チェック）</h2>
-    <div class="row">
-      <div class="field" style="flex:1;min-width:200px;">
-        <label>行A（ひらがな読み）</label>
-        <input type="text" id="cmp-a" placeholder="あいたいよ" autocomplete="off">
-      </div>
-      <div class="field" style="flex:1;min-width:200px;">
-        <label>行B（ひらがな読み）</label>
-        <input type="text" id="cmp-b" placeholder="かえりたい" autocomplete="off">
-      </div>
-      <button class="btn secondary" id="btn-compare">比較</button>
-    </div>
-    <div id="cmp-result" style="margin-top:10px;"></div>
-  </div>
-</section>
-
-<!-- データ -->
+<!-- ========== データタブ ========== -->
 <section id="tab-data" class="tabpanel" style="display:none;">
   <div class="panel">
     <h2>自動保存</h2>
-    <p style="color:var(--sub);font-size:.80rem;">
-      「📂 保存先」でローカルJSONを指定すると変更のたびに自動保存される。<br>
+    <p style="color:var(--sub);font-size:.78rem;">
+      「📂」ボタンでローカルJSONを指定すると変更のたびに自動保存される。<br>
       未指定でもブラウザ内（IndexedDB）に自動バックアップ → 次回同じブラウザで復元。
     </p>
     <button class="btn secondary" id="btn-select-file2">📂 保存先を選ぶ / 変更</button>
     <div class="status" id="idb-status"></div>
   </div>
   <div class="panel">
-    <h2>JSONエクスポート（手動バックアップ）</h2>
+    <h2>JSONエクスポート</h2>
     <button class="btn" id="btn-export">JSONをダウンロード</button>
   </div>
   <div class="panel">
     <h2>JSONインポート</h2>
-    <p style="color:var(--sub);font-size:.80rem;">以前保存したJSONファイルを読み込む。</p>
     <input type="file" id="import-file" accept=".json" style="display:none;">
     <div class="row">
-      <button class="btn secondary" id="btn-import-merge">マージ（既存に追加）</button>
+      <button class="btn secondary" id="btn-import-merge">マージ（追加）</button>
       <button class="btn ghost" id="btn-import-replace">置き換え</button>
     </div>
     <div class="status" id="import-status"></div>
   </div>
   <div class="panel">
     <h2>シードデータ（初回用）</h2>
-    <p style="color:var(--sub);font-size:.80rem;">あらかじめ用意した約1000件の語を一括登録する。重複はスキップ。</p>
+    <p style="color:var(--sub);font-size:.78rem;">あらかじめ用意した語を一括登録する。重複はスキップ。</p>
     <button class="btn secondary" id="btn-seed-load">シードを読み込む</button>
     <div class="status" id="seed-status"></div>
   </div>
@@ -381,70 +488,39 @@
 </main>
 <script type="text/sw-src" id="sw-src">
 
-var CACHE_NAME='mora-zukan-v2';
+var CACHE_NAME='mora-zukan-v3';
 var SHELL_URL=self.location.href;
-
 self.addEventListener('install',function(e){
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(function(c){
-      return c.add(SHELL_URL).catch(function(){});
-    })
-  );
-  // skipWaiting はクライアント側から SKIP_WAITING メッセージで呼ぶ
+  e.waitUntil(caches.open(CACHE_NAME).then(function(c){return c.add(SHELL_URL).catch(function(){});}).catch(function(){}));
 });
-
 self.addEventListener('activate',function(e){
-  e.waitUntil(
-    caches.keys().then(function(keys){
-      return Promise.all(keys.filter(function(k){return k!==CACHE_NAME;}).map(function(k){
-        return caches.delete(k);
-      }));
-    }).then(function(){return self.clients.claim();})
-  );
+  e.waitUntil(caches.keys().then(function(keys){
+    return Promise.all(keys.filter(function(k){return k!==CACHE_NAME;}).map(function(k){return caches.delete(k);}));
+  }).then(function(){return self.clients.claim();}));
 });
-
 self.addEventListener('fetch',function(e){
-  // HTMLのみ Network-first（常に最新）、それ以外はCache-first
-  var isNavigation=e.request.mode==='navigate';
-  if(isNavigation){
-    e.respondWith(
-      fetch(e.request).then(function(res){
-        var c=res.clone();
-        caches.open(CACHE_NAME).then(function(cache){cache.put(e.request,c);});
-        return res;
-      }).catch(function(){
-        return caches.match(e.request);
-      })
-    );
+  if(e.request.mode==='navigate'){
+    e.respondWith(fetch(e.request).then(function(r){
+      var c=r.clone();caches.open(CACHE_NAME).then(function(cache){cache.put(e.request,c);});return r;
+    }).catch(function(){return caches.match(e.request);}));
   }else{
-    e.respondWith(
-      caches.match(e.request).then(function(r){
-        return r||fetch(e.request).then(function(res){
-          if(res&&res.status===200){
-            var c=res.clone();
-            caches.open(CACHE_NAME).then(function(cache){cache.put(e.request,c);});
-          }
-          return res;
-        });
-      })
-    );
+    e.respondWith(caches.match(e.request).then(function(r){
+      return r||fetch(e.request).then(function(res){
+        if(res&&res.status===200){var c=res.clone();caches.open(CACHE_NAME).then(function(cache){cache.put(e.request,c);});}
+        return res;
+      });
+    }));
   }
 });
-
-// クライアントからの SKIP_WAITING メッセージを受信
-self.addEventListener('message',function(e){
-  if(e.data&&e.data.type==='SKIP_WAITING'){
-    self.skipWaiting();
-  }
-});
+self.addEventListener('message',function(e){if(e.data&&e.data.type==='SKIP_WAITING')self.skipWaiting();});
 </script>
 <script>
-var SEED_WORDS=[{"hyouki":"空","yomi":"そら","memo":"自然"},{"hyouki":"青空","yomi":"あおぞら","memo":"自然"},{"hyouki":"夜空","yomi":"よぞら","memo":"自然"},{"hyouki":"星空","yomi":"ほしぞら","memo":"自然"},{"hyouki":"星","yomi":"ほし","memo":"自然"},{"hyouki":"月","yomi":"つき","memo":"自然"},{"hyouki":"満月","yomi":"まんげつ","memo":"自然"},{"hyouki":"新月","yomi":"しんげつ","memo":"自然"},{"hyouki":"太陽","yomi":"たいよう","memo":"自然"},{"hyouki":"陽射し","yomi":"ひざし","memo":"自然"},{"hyouki":"雲","yomi":"くも","memo":"自然"},{"hyouki":"白雲","yomi":"はくうん","memo":"自然"},{"hyouki":"風","yomi":"かぜ","memo":"自然"},{"hyouki":"そよ風","yomi":"そよかぜ","memo":"自然"},{"hyouki":"追い風","yomi":"おいかぜ","memo":"自然"},{"hyouki":"北風","yomi":"きたかぜ","memo":"自然"},{"hyouki":"春風","yomi":"はるかぜ","memo":"自然"},{"hyouki":"雨","yomi":"あめ","memo":"自然"},{"hyouki":"小雨","yomi":"こさめ","memo":"自然"},{"hyouki":"通り雨","yomi":"とおりあめ","memo":"自然"},{"hyouki":"雷雨","yomi":"らいう","memo":"自然"},{"hyouki":"雪","yomi":"ゆき","memo":"自然"},{"hyouki":"初雪","yomi":"はつゆき","memo":"自然"},{"hyouki":"吹雪","yomi":"ふぶき","memo":"自然"},{"hyouki":"霧","yomi":"きり","memo":"自然"},{"hyouki":"霞","yomi":"かすみ","memo":"自然"},{"hyouki":"雷","yomi":"かみなり","memo":"自然"},{"hyouki":"虹","yomi":"にじ","memo":"自然"},{"hyouki":"嵐","yomi":"あらし","memo":"自然"},{"hyouki":"台風","yomi":"たいふう","memo":"自然"},{"hyouki":"波","yomi":"なみ","memo":"自然"},{"hyouki":"潮","yomi":"しお","memo":"自然"},{"hyouki":"海","yomi":"うみ","memo":"自然"},{"hyouki":"大海","yomi":"おおうみ","memo":"自然"},{"hyouki":"水平線","yomi":"すいへいせん","memo":"自然"},{"hyouki":"浜辺","yomi":"はまべ","memo":"自然"},{"hyouki":"砂浜","yomi":"さはまべ","memo":"自然"},{"hyouki":"岸","yomi":"きし","memo":"自然"},{"hyouki":"島","yomi":"しま","memo":"自然"},{"hyouki":"湖","yomi":"みずうみ","memo":"自然"},{"hyouki":"川","yomi":"かわ","memo":"自然"},{"hyouki":"流れ","yomi":"ながれ","memo":"自然"},{"hyouki":"滝","yomi":"たき","memo":"自然"},{"hyouki":"泉","yomi":"いずみ","memo":"自然"},{"hyouki":"山","yomi":"やま","memo":"自然"},{"hyouki":"峰","yomi":"みね","memo":"自然"},{"hyouki":"丘","yomi":"おか","memo":"自然"},{"hyouki":"谷","yomi":"たに","memo":"自然"},{"hyouki":"森","yomi":"もり","memo":"自然"},{"hyouki":"林","yomi":"はやし","memo":"自然"},{"hyouki":"草原","yomi":"そうげん","memo":"自然"},{"hyouki":"大地","yomi":"だいち","memo":"自然"},{"hyouki":"土","yomi":"つち","memo":"自然"},{"hyouki":"砂","yomi":"すな","memo":"自然"},{"hyouki":"石","yomi":"いし","memo":"自然"},{"hyouki":"岩","yomi":"いわ","memo":"自然"},{"hyouki":"火","yomi":"ひ","memo":"自然"},{"hyouki":"炎","yomi":"ほのお","memo":"自然"},{"hyouki":"灯","yomi":"あかり","memo":"自然"},{"hyouki":"光","yomi":"ひかり","memo":"自然"},{"hyouki":"陽光","yomi":"ようこう","memo":"自然"},{"hyouki":"影","yomi":"かげ","memo":"自然"},{"hyouki":"闇","yomi":"やみ","memo":"自然"},{"hyouki":"暗闇","yomi":"くらやみ","memo":"自然"},{"hyouki":"夜","yomi":"よる","memo":"自然"},{"hyouki":"朝","yomi":"あさ","memo":"自然"},{"hyouki":"朝焼け","yomi":"あさやけ","memo":"自然"},{"hyouki":"夕焼け","yomi":"ゆうやけ","memo":"自然"},{"hyouki":"夕暮れ","yomi":"ゆうぐれ","memo":"自然"},{"hyouki":"黄昏","yomi":"たそがれ","memo":"自然"},{"hyouki":"真昼","yomi":"まひる","memo":"自然"},{"hyouki":"真夜中","yomi":"まよなか","memo":"自然"},{"hyouki":"季節","yomi":"きせつ","memo":"自然"},{"hyouki":"春","yomi":"はる","memo":"自然"},{"hyouki":"夏","yomi":"なつ","memo":"自然"},{"hyouki":"秋","yomi":"あき","memo":"自然"},{"hyouki":"冬","yomi":"ふゆ","memo":"自然"},{"hyouki":"木漏れ日","yomi":"こもれび","memo":"自然"},{"hyouki":"氷","yomi":"こおり","memo":"自然"},{"hyouki":"霜","yomi":"しも","memo":"自然"},{"hyouki":"露","yomi":"つゆ","memo":"自然"},{"hyouki":"花","yomi":"はな","memo":"自然"},{"hyouki":"桜","yomi":"さくら","memo":"自然"},{"hyouki":"向日葵","yomi":"ひまわり","memo":"自然"},{"hyouki":"紫陽花","yomi":"あじさい","memo":"自然"},{"hyouki":"梅","yomi":"うめ","memo":"自然"},{"hyouki":"蕾","yomi":"つぼみ","memo":"自然"},{"hyouki":"花びら","yomi":"はなびら","memo":"自然"},{"hyouki":"緑","yomi":"みどり","memo":"自然"},{"hyouki":"若葉","yomi":"わかば","memo":"自然"},{"hyouki":"紅葉","yomi":"もみじ","memo":"自然"},{"hyouki":"落ち葉","yomi":"おちば","memo":"自然"},{"hyouki":"木","yomi":"き","memo":"自然"},{"hyouki":"枝","yomi":"えだ","memo":"自然"},{"hyouki":"根","yomi":"ね","memo":"自然"},{"hyouki":"天","yomi":"てん","memo":"自然"},{"hyouki":"天空","yomi":"てんくう","memo":"自然"},{"hyouki":"地平線","yomi":"ちへいせん","memo":"自然"},{"hyouki":"銀河","yomi":"ぎんが","memo":"自然"},{"hyouki":"星座","yomi":"せいざ","memo":"自然"},{"hyouki":"流れ星","yomi":"ながれぼし","memo":"自然"},{"hyouki":"彗星","yomi":"すいせい","memo":"自然"},{"hyouki":"北極星","yomi":"ほっきょくせい","memo":"自然"},{"hyouki":"天の川","yomi":"あまのがわ","memo":"自然"},{"hyouki":"夜風","yomi":"よかぜ","memo":"自然"},{"hyouki":"潮風","yomi":"しおかぜ","memo":"自然"},{"hyouki":"木枯らし","yomi":"こがらし","memo":"季節"},{"hyouki":"陽炎","yomi":"かげろう","memo":"自然"},{"hyouki":"蜃気楼","yomi":"しんきろう","memo":"自然"},{"hyouki":"水面","yomi":"みなも","memo":"自然"},{"hyouki":"波音","yomi":"なみおと","memo":"自然"},{"hyouki":"波間","yomi":"はざま","memo":"自然"},{"hyouki":"汀","yomi":"みぎわ","memo":"自然"},{"hyouki":"岬","yomi":"みさき","memo":"自然"},{"hyouki":"渚","yomi":"なぎさ","memo":"自然"},{"hyouki":"入り江","yomi":"いりえ","memo":"自然"},{"hyouki":"海原","yomi":"うなばら","memo":"自然"},{"hyouki":"大空","yomi":"おおぞら","memo":"自然"},{"hyouki":"青葉","yomi":"あおば","memo":"自然"},{"hyouki":"新緑","yomi":"しんりょく","memo":"自然"},{"hyouki":"常緑","yomi":"じょうりょく","memo":"自然"},{"hyouki":"枯れ葉","yomi":"かれは","memo":"自然"},{"hyouki":"落葉","yomi":"らくよう","memo":"自然"},{"hyouki":"草木","yomi":"くさき","memo":"自然"},{"hyouki":"草花","yomi":"くさばな","memo":"自然"},{"hyouki":"野原","yomi":"のはら","memo":"自然"},{"hyouki":"花畑","yomi":"はなばたけ","memo":"自然"},{"hyouki":"花園","yomi":"はなぞの","memo":"自然"},{"hyouki":"花束","yomi":"はなたば","memo":"自然"},{"hyouki":"花火","yomi":"はなび","memo":"自然"},{"hyouki":"蝉","yomi":"せみ","memo":"自然"},{"hyouki":"蛍","yomi":"ほたる","memo":"自然"},{"hyouki":"蝶","yomi":"ちょう","memo":"自然"},{"hyouki":"小鳥","yomi":"こどり","memo":"自然"},{"hyouki":"鳥","yomi":"とり","memo":"自然"},{"hyouki":"燕","yomi":"つばめ","memo":"自然"},{"hyouki":"鴎","yomi":"かもめ","memo":"自然"},{"hyouki":"猫","yomi":"ねこ","memo":"自然"},{"hyouki":"犬","yomi":"いぬ","memo":"自然"},{"hyouki":"木霊","yomi":"こだま","memo":"自然"},{"hyouki":"陽だまり","yomi":"ひだまり","memo":"自然"},{"hyouki":"月明かり","yomi":"つきあかり","memo":"自然"},{"hyouki":"星明かり","yomi":"ほしあかり","memo":"自然"},{"hyouki":"夜霧","yomi":"よぎり","memo":"自然"},{"hyouki":"朝霧","yomi":"あさぎり","memo":"自然"},{"hyouki":"初日の出","yomi":"はつひので","memo":"自然"},{"hyouki":"初日","yomi":"はつひ","memo":"自然"},{"hyouki":"初春","yomi":"はつはる","memo":"自然"},{"hyouki":"立春","yomi":"りっしゅん","memo":"自然"},{"hyouki":"梅雨","yomi":"つゆ","memo":"自然"},{"hyouki":"木陰","yomi":"こかげ","memo":"自然"},{"hyouki":"陰","yomi":"かげ","memo":"自然"},{"hyouki":"陽","yomi":"ひ","memo":"自然"},{"hyouki":"光線","yomi":"こうせん","memo":"自然"},{"hyouki":"曙","yomi":"あけぼの","memo":"自然"},{"hyouki":"有明","yomi":"ありあけ","memo":"自然"},{"hyouki":"残照","yomi":"ざんしょう","memo":"自然"},{"hyouki":"薄明","yomi":"はくめい","memo":"自然"},{"hyouki":"満天","yomi":"まんてん","memo":"自然"},{"hyouki":"半月","yomi":"はんげつ","memo":"自然"},{"hyouki":"弦月","yomi":"げんげつ","memo":"自然"},{"hyouki":"月光","yomi":"げっこう","memo":"自然"},{"hyouki":"白夜","yomi":"はくや","memo":"自然"},{"hyouki":"極光","yomi":"きょっこう","memo":"自然"},{"hyouki":"地球","yomi":"ちきゅう","memo":"自然"},{"hyouki":"惑星","yomi":"わくせい","memo":"自然"},{"hyouki":"彼方","yomi":"かなた","memo":"自然"},{"hyouki":"此方","yomi":"こなた","memo":"自然"},{"hyouki":"果て","yomi":"はて","memo":"自然"},{"hyouki":"海岸","yomi":"かいがん","memo":"自然"},{"hyouki":"離島","yomi":"りとう","memo":"自然"},{"hyouki":"水","yomi":"みず","memo":"自然"},{"hyouki":"雫","yomi":"しずく","memo":"自然"},{"hyouki":"水滴","yomi":"すいてき","memo":"自然"},{"hyouki":"氷柱","yomi":"つらら","memo":"自然"},{"hyouki":"雪片","yomi":"せっぺん","memo":"自然"},{"hyouki":"陽炎","yomi":"かぎろい","memo":"自然"},{"hyouki":"地面","yomi":"じめん","memo":"自然"},{"hyouki":"地","yomi":"ち","memo":"自然"},{"hyouki":"空気","yomi":"くうき","memo":"自然"},{"hyouki":"大気","yomi":"たいき","memo":"自然"},{"hyouki":"夜空色","yomi":"よぞらいろ","memo":"自然"},{"hyouki":"満ち潮","yomi":"みちしお","memo":"自然"},{"hyouki":"引き潮","yomi":"ひきしお","memo":"自然"},{"hyouki":"水際","yomi":"みずぎわ","memo":"自然"},{"hyouki":"岩場","yomi":"いわば","memo":"自然"},{"hyouki":"愛","yomi":"あい","memo":"感情"},{"hyouki":"恋","yomi":"こい","memo":"感情"},{"hyouki":"初恋","yomi":"はつこい","memo":"感情"},{"hyouki":"恋心","yomi":"こいごころ","memo":"感情"},{"hyouki":"片思い","yomi":"かたおもい","memo":"感情"},{"hyouki":"想い","yomi":"おもい","memo":"感情"},{"hyouki":"想い出","yomi":"おもいで","memo":"感情"},{"hyouki":"記憶","yomi":"きおく","memo":"感情"},{"hyouki":"心","yomi":"こころ","memo":"感情"},{"hyouki":"胸","yomi":"むね","memo":"感情"},{"hyouki":"涙","yomi":"なみだ","memo":"感情"},{"hyouki":"笑顔","yomi":"えがお","memo":"感情"},{"hyouki":"微笑み","yomi":"ほほえみ","memo":"感情"},{"hyouki":"喜び","yomi":"よろこび","memo":"感情"},{"hyouki":"幸せ","yomi":"しあわせ","memo":"感情"},{"hyouki":"幸福","yomi":"こうふく","memo":"感情"},{"hyouki":"悲しみ","yomi":"かなしみ","memo":"感情"},{"hyouki":"切なさ","yomi":"せつなさ","memo":"感情"},{"hyouki":"寂しさ","yomi":"さびしさ","memo":"感情"},{"hyouki":"孤独","yomi":"こどく","memo":"感情"},{"hyouki":"不安","yomi":"ふあん","memo":"感情"},{"hyouki":"安らぎ","yomi":"やすらぎ","memo":"感情"},{"hyouki":"安心","yomi":"あんしん","memo":"感情"},{"hyouki":"優しさ","yomi":"やさしさ","memo":"感情"},{"hyouki":"温かさ","yomi":"あたたかさ","memo":"感情"},{"hyouki":"強さ","yomi":"つよさ","memo":"感情"},{"hyouki":"弱さ","yomi":"よわさ","memo":"感情"},{"hyouki":"勇気","yomi":"ゆうき","memo":"感情"},{"hyouki":"希望","yomi":"きぼう","memo":"感情"},{"hyouki":"絶望","yomi":"ぜつぼう","memo":"感情"},{"hyouki":"夢","yomi":"ゆめ","memo":"抽象"},{"hyouki":"憧れ","yomi":"あこがれ","memo":"感情"},{"hyouki":"焦がれ","yomi":"こがれ","memo":"感情"},{"hyouki":"苦しみ","yomi":"くるしみ","memo":"感情"},{"hyouki":"痛み","yomi":"いたみ","memo":"感情"},{"hyouki":"傷","yomi":"きず","memo":"感情"},{"hyouki":"怒り","yomi":"いかり","memo":"感情"},{"hyouki":"嫉妬","yomi":"しっと","memo":"感情"},{"hyouki":"後悔","yomi":"こうかい","memo":"感情"},{"hyouki":"迷い","yomi":"まよい","memo":"感情"},{"hyouki":"戸惑い","yomi":"とまどい","memo":"感情"},{"hyouki":"動揺","yomi":"どうよう","memo":"感情"},{"hyouki":"感動","yomi":"かんどう","memo":"感情"},{"hyouki":"感謝","yomi":"かんしゃ","memo":"感情"},{"hyouki":"信頼","yomi":"しんらい","memo":"感情"},{"hyouki":"裏切り","yomi":"うらぎり","memo":"感情"},{"hyouki":"嘘","yomi":"うそ","memo":"感情"},{"hyouki":"本音","yomi":"ほんね","memo":"感情"},{"hyouki":"真実","yomi":"しんじつ","memo":"感情"},{"hyouki":"葛藤","yomi":"かっとう","memo":"感情"},{"hyouki":"切望","yomi":"せつぼう","memo":"感情"},{"hyouki":"情熱","yomi":"じょうねつ","memo":"感情"},{"hyouki":"熱情","yomi":"ねつじょう","memo":"感情"},{"hyouki":"憂鬱","yomi":"ゆううつ","memo":"感情"},{"hyouki":"虚しさ","yomi":"むなしさ","memo":"感情"},{"hyouki":"懐かしさ","yomi":"なつかしさ","memo":"感情"},{"hyouki":"愛しさ","yomi":"いとしさ","memo":"感情"},{"hyouki":"優しい","yomi":"やさしい","memo":"感情"},{"hyouki":"切ない","yomi":"せつない","memo":"感情"},{"hyouki":"寂しい","yomi":"さびしい","memo":"感情"},{"hyouki":"嬉しい","yomi":"うれしい","memo":"感情"},{"hyouki":"悲しい","yomi":"かなしい","memo":"感情"},{"hyouki":"懐かしい","yomi":"なつかしい","memo":"感情"},{"hyouki":"愛しい","yomi":"いとしい","memo":"感情"},{"hyouki":"苦しい","yomi":"くるしい","memo":"感情"},{"hyouki":"愛情","yomi":"あいじょう","memo":"感情"},{"hyouki":"情","yomi":"じょう","memo":"感情"},{"hyouki":"恋情","yomi":"れんじょう","memo":"感情"},{"hyouki":"慕う","yomi":"したう","memo":"感情"},{"hyouki":"恋しい","yomi":"こいしい","memo":"感情"},{"hyouki":"恋しさ","yomi":"こいしさ","memo":"感情"},{"hyouki":"狂おしい","yomi":"くるおしい","memo":"感情"},{"hyouki":"狂おしさ","yomi":"くるおしさ","memo":"感情"},{"hyouki":"胸騒ぎ","yomi":"むなさわぎ","memo":"感情"},{"hyouki":"胸の奥","yomi":"むねのおく","memo":"感情"},{"hyouki":"心の奥","yomi":"こころのおく","memo":"感情"},{"hyouki":"本心","yomi":"ほんしん","memo":"感情"},{"hyouki":"純粋","yomi":"じゅんすい","memo":"感情"},{"hyouki":"無邪気","yomi":"むじゃき","memo":"感情"},{"hyouki":"素直","yomi":"すなお","memo":"感情"},{"hyouki":"不器用","yomi":"ぶきよう","memo":"感情"},{"hyouki":"脆さ","yomi":"もろさ","memo":"感情"},{"hyouki":"脆い","yomi":"もろい","memo":"感情"},{"hyouki":"儚さ","yomi":"はかなさ","memo":"感情"},{"hyouki":"儚い","yomi":"はかない","memo":"感情"},{"hyouki":"淡い","yomi":"あわい","memo":"感情"},{"hyouki":"淡さ","yomi":"あわさ","memo":"感情"},{"hyouki":"切実","yomi":"せつじつ","memo":"感情"},{"hyouki":"一途","yomi":"いちず","memo":"感情"},{"hyouki":"真剣","yomi":"しんけん","memo":"感情"},{"hyouki":"健気","yomi":"けなげ","memo":"感情"},{"hyouki":"愚かさ","yomi":"おろかさ","memo":"感情"},{"hyouki":"愚か","yomi":"おろか","memo":"感情"},{"hyouki":"迷子","yomi":"まいご","memo":"感情"},{"hyouki":"孤高","yomi":"ここう","memo":"感情"},{"hyouki":"孤独感","yomi":"こどくかん","memo":"感情"},{"hyouki":"虚無","yomi":"きょむ","memo":"感情"},{"hyouki":"空虚","yomi":"くうきょ","memo":"感情"},{"hyouki":"満足","yomi":"まんぞく","memo":"感情"},{"hyouki":"充実","yomi":"じゅうじつ","memo":"感情"},{"hyouki":"安堵","yomi":"あんど","memo":"感情"},{"hyouki":"緊張","yomi":"きんちょう","memo":"感情"},{"hyouki":"興奮","yomi":"こうふん","memo":"感情"},{"hyouki":"陶酔","yomi":"とうすい","memo":"感情"},{"hyouki":"夢中","yomi":"むちゅう","memo":"感情"},{"hyouki":"無我夢中","yomi":"むがむちゅう","memo":"感情"},{"hyouki":"我慢","yomi":"がまん","memo":"感情"},{"hyouki":"辛抱","yomi":"しんぼう","memo":"感情"},{"hyouki":"諦め","yomi":"あきらめ","memo":"感情"},{"hyouki":"執着","yomi":"しゅうちゃく","memo":"感情"},{"hyouki":"未練","yomi":"みれん","memo":"感情"},{"hyouki":"名残","yomi":"なごり","memo":"感情"},{"hyouki":"郷愁","yomi":"きょうしゅう","memo":"感情"},{"hyouki":"追憶","yomi":"ついおく","memo":"感情"},{"hyouki":"回想","yomi":"かいそう","memo":"感情"},{"hyouki":"予感","yomi":"よかん","memo":"感情"},{"hyouki":"確信","yomi":"かくしん","memo":"感情"},{"hyouki":"不信","yomi":"ふしん","memo":"感情"},{"hyouki":"猜疑","yomi":"さいぎ","memo":"感情"},{"hyouki":"羨望","yomi":"せんぼう","memo":"感情"},{"hyouki":"羨ましい","yomi":"うらやましい","memo":"感情"},{"hyouki":"優越","yomi":"ゆうえつ","memo":"感情"},{"hyouki":"劣等感","yomi":"れっとうかん","memo":"感情"},{"hyouki":"自尊心","yomi":"じそんしん","memo":"感情"},{"hyouki":"自信","yomi":"じしん","memo":"感情"},{"hyouki":"無力感","yomi":"むりょくかん","memo":"感情"},{"hyouki":"無力","yomi":"むりょく","memo":"感情"},{"hyouki":"有頂天","yomi":"うちょうてん","memo":"感情"},{"hyouki":"感無量","yomi":"かんむりょう","memo":"感情"},{"hyouki":"感慨","yomi":"かんがい","memo":"感情"},{"hyouki":"感激","yomi":"かんげき","memo":"感情"},{"hyouki":"胸が熱い","yomi":"むねがあつい","memo":"感情"},{"hyouki":"胸が痛い","yomi":"むねがいたい","memo":"感情"},{"hyouki":"いとおしい","yomi":"いとおしい","memo":"感情"},{"hyouki":"もどかしい","yomi":"もどかしい","memo":"感情"},{"hyouki":"やるせない","yomi":"やるせない","memo":"感情"},{"hyouki":"たまらない","yomi":"たまらない","memo":"感情"},{"hyouki":"切なる","yomi":"せつなる","memo":"感情"},{"hyouki":"有り難い","yomi":"ありがたい","memo":"感情"},{"hyouki":"勿体ない","yomi":"もったいない","memo":"感情"},{"hyouki":"恐れ","yomi":"おそれ","memo":"感情"},{"hyouki":"怖さ","yomi":"こわさ","memo":"感情"},{"hyouki":"怖い","yomi":"こわい","memo":"感情"},{"hyouki":"愛おしい","yomi":"いとおしい","memo":"感情"},{"hyouki":"一目惚れ","yomi":"いちもくぼれ","memo":"感情"},{"hyouki":"時間","yomi":"じかん","memo":"時間"},{"hyouki":"瞬間","yomi":"しゅんかん","memo":"時間"},{"hyouki":"一瞬","yomi":"いっしゅん","memo":"時間"},{"hyouki":"永遠","yomi":"えいえん","memo":"時間"},{"hyouki":"未来","yomi":"みらい","memo":"時間"},{"hyouki":"過去","yomi":"かこ","memo":"時間"},{"hyouki":"現在","yomi":"げんざい","memo":"時間"},{"hyouki":"今","yomi":"いま","memo":"時間"},{"hyouki":"今日","yomi":"きょう","memo":"時間"},{"hyouki":"明日","yomi":"あした","memo":"時間"},{"hyouki":"昨日","yomi":"きのう","memo":"時間"},{"hyouki":"今夜","yomi":"こんや","memo":"時間"},{"hyouki":"今宵","yomi":"こよい","memo":"時間"},{"hyouki":"いつか","yomi":"いつか","memo":"時間"},{"hyouki":"いつも","yomi":"いつも","memo":"時間"},{"hyouki":"いつまでも","yomi":"いつまでも","memo":"時間"},{"hyouki":"刻","yomi":"とき","memo":"時間"},{"hyouki":"時","yomi":"とき","memo":"時間"},{"hyouki":"時代","yomi":"じだい","memo":"時間"},{"hyouki":"青春","yomi":"せいしゅん","memo":"時間"},{"hyouki":"一生","yomi":"いっしょう","memo":"時間"},{"hyouki":"人生","yomi":"じんせい","memo":"時間"},{"hyouki":"生涯","yomi":"しょうがい","memo":"時間"},{"hyouki":"一日","yomi":"いちにち","memo":"時間"},{"hyouki":"夜更け","yomi":"よふけ","memo":"時間"},{"hyouki":"夜明け","yomi":"よあけ","memo":"時間"},{"hyouki":"始まり","yomi":"はじまり","memo":"時間"},{"hyouki":"終わり","yomi":"おわり","memo":"時間"},{"hyouki":"最後","yomi":"さいご","memo":"時間"},{"hyouki":"最初","yomi":"さいしょ","memo":"時間"},{"hyouki":"夜半","yomi":"やはん","memo":"時間"},{"hyouki":"正午","yomi":"しょうご","memo":"時間"},{"hyouki":"黄昏時","yomi":"たそがれどき","memo":"時間"},{"hyouki":"逢魔時","yomi":"おうまがとき","memo":"時間"},{"hyouki":"夕方","yomi":"ゆうがた","memo":"時間"},{"hyouki":"早朝","yomi":"そうちょう","memo":"時間"},{"hyouki":"深夜","yomi":"しんや","memo":"時間"},{"hyouki":"昼下がり","yomi":"ひるさがり","memo":"時間"},{"hyouki":"年月","yomi":"ねんげつ","memo":"時間"},{"hyouki":"歳月","yomi":"さいげつ","memo":"時間"},{"hyouki":"月日","yomi":"つきひ","memo":"時間"},{"hyouki":"季節風","yomi":"きせつふう","memo":"時間"},{"hyouki":"巡り","yomi":"めぐり","memo":"時間"},{"hyouki":"循環","yomi":"じゅんかん","memo":"時間"},{"hyouki":"一年","yomi":"いちねん","memo":"時間"},{"hyouki":"一週間","yomi":"いっしゅうかん","memo":"時間"},{"hyouki":"一刻","yomi":"いっこく","memo":"時間"},{"hyouki":"片時","yomi":"かたとき","memo":"時間"},{"hyouki":"常","yomi":"とこ","memo":"時間"},{"hyouki":"常永久","yomi":"とこしえ","memo":"時間"},{"hyouki":"久遠","yomi":"くおん","memo":"時間"},{"hyouki":"不変","yomi":"ふへん","memo":"時間"},{"hyouki":"無常","yomi":"むじょう","memo":"時間"},{"hyouki":"流転","yomi":"るてん","memo":"時間"},{"hyouki":"変遷","yomi":"へんせん","memo":"時間"},{"hyouki":"節目","yomi":"せつめ","memo":"時間"},{"hyouki":"分岐点","yomi":"ぶんきてん","memo":"時間"},{"hyouki":"分かれ道","yomi":"わかれみち","memo":"時間"},{"hyouki":"通過点","yomi":"つうかてん","memo":"時間"},{"hyouki":"旅路","yomi":"たびじ","memo":"時間"},{"hyouki":"道のり","yomi":"みちのり","memo":"時間"},{"hyouki":"出発","yomi":"しゅっぱつ","memo":"時間"},{"hyouki":"帰り道","yomi":"かえりみち","memo":"時間"},{"hyouki":"帰路","yomi":"きろ","memo":"時間"},{"hyouki":"旅立ち","yomi":"たびだち","memo":"時間"},{"hyouki":"門出","yomi":"かどで","memo":"時間"},{"hyouki":"始発","yomi":"しはつ","memo":"時間"},{"hyouki":"終電","yomi":"しゅうでん","memo":"時間"},{"hyouki":"一夜","yomi":"いちや","memo":"時間"},{"hyouki":"一晩","yomi":"ひとばん","memo":"時間"},{"hyouki":"数年","yomi":"すうねん","memo":"時間"},{"hyouki":"十年","yomi":"じゅうねん","memo":"時間"},{"hyouki":"百年","yomi":"ひゃくねん","memo":"時間"},{"hyouki":"手","yomi":"て","memo":"身体"},{"hyouki":"両手","yomi":"りょうて","memo":"身体"},{"hyouki":"指","yomi":"ゆび","memo":"身体"},{"hyouki":"肩","yomi":"かた","memo":"身体"},{"hyouki":"背中","yomi":"せなか","memo":"身体"},{"hyouki":"瞳","yomi":"ひとみ","memo":"身体"},{"hyouki":"目","yomi":"め","memo":"身体"},{"hyouki":"唇","yomi":"くちびる","memo":"身体"},{"hyouki":"声","yomi":"こえ","memo":"身体"},{"hyouki":"吐息","yomi":"といき","memo":"身体"},{"hyouki":"息","yomi":"いき","memo":"身体"},{"hyouki":"髪","yomi":"かみ","memo":"身体"},{"hyouki":"頬","yomi":"ほほ","memo":"身体"},{"hyouki":"額","yomi":"ひたい","memo":"身体"},{"hyouki":"足音","yomi":"あしおと","memo":"音楽"},{"hyouki":"足跡","yomi":"あしあと","memo":"身体"},{"hyouki":"鼓動","yomi":"こどう","memo":"身体"},{"hyouki":"心臓","yomi":"しんぞう","memo":"身体"},{"hyouki":"体温","yomi":"たいおん","memo":"身体"},{"hyouki":"手のひら","yomi":"てのひら","memo":"身体"},{"hyouki":"手首","yomi":"てくび","memo":"身体"},{"hyouki":"指先","yomi":"ゆびさき","memo":"身体"},{"hyouki":"爪","yomi":"つめ","memo":"身体"},{"hyouki":"肌","yomi":"はだ","memo":"身体"},{"hyouki":"背","yomi":"せ","memo":"身体"},{"hyouki":"腕","yomi":"うで","memo":"身体"},{"hyouki":"膝","yomi":"ひざ","memo":"身体"},{"hyouki":"足","yomi":"あし","memo":"身体"},{"hyouki":"瞳孔","yomi":"どうこう","memo":"身体"},{"hyouki":"睫毛","yomi":"まつげ","memo":"身体"},{"hyouki":"眉","yomi":"まゆ","memo":"身体"},{"hyouki":"耳","yomi":"みみ","memo":"身体"},{"hyouki":"鼻","yomi":"はな","memo":"身体"},{"hyouki":"歯","yomi":"は","memo":"身体"},{"hyouki":"喉","yomi":"のど","memo":"身体"},{"hyouki":"骨","yomi":"ほね","memo":"身体"},{"hyouki":"血","yomi":"ち","memo":"身体"},{"hyouki":"脈","yomi":"みゃく","memo":"身体"},{"hyouki":"命","yomi":"いのち","memo":"身体"},{"hyouki":"魂","yomi":"たましい","memo":"身体"},{"hyouki":"精神","yomi":"せいしん","memo":"身体"},{"hyouki":"意識","yomi":"いしき","memo":"身体"},{"hyouki":"体","yomi":"からだ","memo":"身体"},{"hyouki":"身体","yomi":"しんたい","memo":"身体"},{"hyouki":"微笑","yomi":"びしょう","memo":"身体"},{"hyouki":"涙腺","yomi":"るいせん","memo":"身体"},{"hyouki":"汗","yomi":"あせ","memo":"身体"},{"hyouki":"温もり","yomi":"ぬくもり","memo":"身体"},{"hyouki":"君","yomi":"きみ","memo":"関係"},{"hyouki":"僕","yomi":"ぼく","memo":"関係"},{"hyouki":"私","yomi":"わたし","memo":"関係"},{"hyouki":"貴方","yomi":"あなた","memo":"関係"},{"hyouki":"二人","yomi":"ふたり","memo":"関係"},{"hyouki":"私たち","yomi":"わたしたち","memo":"関係"},{"hyouki":"友達","yomi":"ともだち","memo":"関係"},{"hyouki":"仲間","yomi":"なかま","memo":"関係"},{"hyouki":"家族","yomi":"かぞく","memo":"関係"},{"hyouki":"恋人","yomi":"こいびと","memo":"関係"},{"hyouki":"親友","yomi":"しんゆう","memo":"関係"},{"hyouki":"兄弟","yomi":"きょうだい","memo":"関係"},{"hyouki":"姉妹","yomi":"しまい","memo":"関係"},{"hyouki":"出会い","yomi":"であい","memo":"関係"},{"hyouki":"別れ","yomi":"わかれ","memo":"関係"},{"hyouki":"再会","yomi":"さいかい","memo":"関係"},{"hyouki":"約束","yomi":"やくそく","memo":"関係"},{"hyouki":"絆","yomi":"きずな","memo":"関係"},{"hyouki":"距離","yomi":"きょり","memo":"関係"},{"hyouki":"背中合わせ","yomi":"せなかあわせ","memo":"関係"},{"hyouki":"親","yomi":"おや","memo":"関係"},{"hyouki":"母","yomi":"はは","memo":"関係"},{"hyouki":"父","yomi":"ちち","memo":"関係"},{"hyouki":"子","yomi":"こ","memo":"関係"},{"hyouki":"子供","yomi":"こども","memo":"関係"},{"hyouki":"先輩","yomi":"せんぱい","memo":"関係"},{"hyouki":"後輩","yomi":"こうはい","memo":"関係"},{"hyouki":"師","yomi":"し","memo":"関係"},{"hyouki":"恩師","yomi":"おんし","memo":"関係"},{"hyouki":"仲良し","yomi":"なかよし","memo":"関係"},{"hyouki":"相棒","yomi":"あいぼう","memo":"関係"},{"hyouki":"味方","yomi":"みかた","memo":"関係"},{"hyouki":"敵","yomi":"てき","memo":"関係"},{"hyouki":"同志","yomi":"どうし","memo":"関係"},{"hyouki":"旅人","yomi":"たびびと","memo":"関係"},{"hyouki":"迷い人","yomi":"まよいびと","memo":"関係"},{"hyouki":"見知らぬ人","yomi":"みしらぬひと","memo":"関係"},{"hyouki":"通りすがり","yomi":"とおりすがり","memo":"関係"},{"hyouki":"隣人","yomi":"りんじん","memo":"関係"},{"hyouki":"血縁","yomi":"けつえん","memo":"関係"},{"hyouki":"血筋","yomi":"ちすじ","memo":"関係"},{"hyouki":"我が子","yomi":"わがこ","memo":"関係"},{"hyouki":"愛児","yomi":"あいじ","memo":"関係"},{"hyouki":"初対面","yomi":"しょたいめん","memo":"関係"},{"hyouki":"願い","yomi":"ねがい","memo":"抽象"},{"hyouki":"奇跡","yomi":"きせき","memo":"抽象"},{"hyouki":"運命","yomi":"うんめい","memo":"抽象"},{"hyouki":"軌跡","yomi":"きせき","memo":"抽象"},{"hyouki":"物語","yomi":"ものがたり","memo":"抽象"},{"hyouki":"旅","yomi":"たび","memo":"抽象"},{"hyouki":"道","yomi":"みち","memo":"抽象"},{"hyouki":"地図","yomi":"ちず","memo":"抽象"},{"hyouki":"世界","yomi":"せかい","memo":"抽象"},{"hyouki":"宇宙","yomi":"うちゅう","memo":"抽象"},{"hyouki":"無限","yomi":"むげん","memo":"抽象"},{"hyouki":"自由","yomi":"じゆう","memo":"抽象"},{"hyouki":"翼","yomi":"つばさ","memo":"抽象"},{"hyouki":"羽根","yomi":"はね","memo":"抽象"},{"hyouki":"扉","yomi":"とびら","memo":"抽象"},{"hyouki":"鍵","yomi":"かぎ","memo":"抽象"},{"hyouki":"光景","yomi":"こうけい","memo":"抽象"},{"hyouki":"景色","yomi":"けしき","memo":"抽象"},{"hyouki":"風景","yomi":"ふうけい","memo":"抽象"},{"hyouki":"舞台","yomi":"ぶたい","memo":"抽象"},{"hyouki":"価値","yomi":"かち","memo":"抽象"},{"hyouki":"意味","yomi":"いみ","memo":"抽象"},{"hyouki":"答え","yomi":"こたえ","memo":"抽象"},{"hyouki":"問い","yomi":"とい","memo":"抽象"},{"hyouki":"叫び","yomi":"さけび","memo":"抽象"},{"hyouki":"祈り","yomi":"いのり","memo":"抽象"},{"hyouki":"理想","yomi":"りそう","memo":"抽象"},{"hyouki":"現実","yomi":"げんじつ","memo":"抽象"},{"hyouki":"幻想","yomi":"げんそう","memo":"抽象"},{"hyouki":"幻","yomi":"まぼろし","memo":"抽象"},{"hyouki":"夢幻","yomi":"むげん","memo":"抽象"},{"hyouki":"空想","yomi":"くうそう","memo":"抽象"},{"hyouki":"想像","yomi":"そうぞう","memo":"抽象"},{"hyouki":"創造","yomi":"そうぞう","memo":"抽象"},{"hyouki":"創世","yomi":"そうせい","memo":"抽象"},{"hyouki":"起源","yomi":"きげん","memo":"抽象"},{"hyouki":"終焉","yomi":"しゅうえん","memo":"抽象"},{"hyouki":"結末","yomi":"けつまつ","memo":"抽象"},{"hyouki":"序章","yomi":"じょしょう","memo":"抽象"},{"hyouki":"章","yomi":"しょう","memo":"抽象"},{"hyouki":"台詞","yomi":"せりふ","memo":"抽象"},{"hyouki":"筋書き","yomi":"すじがき","memo":"抽象"},{"hyouki":"脚本","yomi":"きゃくほん","memo":"抽象"},{"hyouki":"舞台裏","yomi":"ぶたいうら","memo":"抽象"},{"hyouki":"幕","yomi":"まく","memo":"抽象"},{"hyouki":"終幕","yomi":"しゅうまく","memo":"抽象"},{"hyouki":"開幕","yomi":"かいまく","memo":"抽象"},{"hyouki":"主役","yomi":"しゅやく","memo":"抽象"},{"hyouki":"脇役","yomi":"わきやく","memo":"抽象"},{"hyouki":"観客","yomi":"かんきゃく","memo":"抽象"},{"hyouki":"拍手","yomi":"はくしゅ","memo":"抽象"},{"hyouki":"喝采","yomi":"かっさい","memo":"抽象"},{"hyouki":"称賛","yomi":"しょうさん","memo":"抽象"},{"hyouki":"勝利","yomi":"しょうり","memo":"抽象"},{"hyouki":"敗北","yomi":"はいぼく","memo":"抽象"},{"hyouki":"挑戦","yomi":"ちょうせん","memo":"抽象"},{"hyouki":"試練","yomi":"しれん","memo":"抽象"},{"hyouki":"壁","yomi":"かべ","memo":"抽象"},{"hyouki":"障害","yomi":"しょうがい","memo":"抽象"},{"hyouki":"克服","yomi":"こくふく","memo":"抽象"},{"hyouki":"成長","yomi":"せいちょう","memo":"抽象"},{"hyouki":"変化","yomi":"へんか","memo":"抽象"},{"hyouki":"進化","yomi":"しんか","memo":"抽象"},{"hyouki":"革命","yomi":"かくめい","memo":"抽象"},{"hyouki":"革新","yomi":"かくしん","memo":"抽象"},{"hyouki":"挑み","yomi":"いどみ","memo":"抽象"},{"hyouki":"挑む","yomi":"いどむ","memo":"抽象"},{"hyouki":"叶える","yomi":"かなえる","memo":"抽象"},{"hyouki":"叶う","yomi":"かなう","memo":"抽象"},{"hyouki":"諦めない","yomi":"あきらめない","memo":"抽象"},{"hyouki":"掴む","yomi":"つかむ","memo":"抽象"},{"hyouki":"掲げる","yomi":"かかげる","memo":"抽象"},{"hyouki":"背負う","yomi":"せおう","memo":"抽象"},{"hyouki":"導く","yomi":"みちびく","memo":"抽象"},{"hyouki":"導き","yomi":"みちびき","memo":"抽象"},{"hyouki":"指針","yomi":"ししん","memo":"抽象"},{"hyouki":"羅針盤","yomi":"らしんばん","memo":"抽象"},{"hyouki":"灯台","yomi":"とうだい","memo":"抽象"},{"hyouki":"道標","yomi":"みちしるべ","memo":"抽象"},{"hyouki":"標","yomi":"しるべ","memo":"抽象"},{"hyouki":"旗","yomi":"はた","memo":"抽象"},{"hyouki":"印","yomi":"しるし","memo":"抽象"},{"hyouki":"証","yomi":"しょう","memo":"抽象"},{"hyouki":"証明","yomi":"しょうめい","memo":"抽象"},{"hyouki":"証拠","yomi":"しょうこ","memo":"抽象"},{"hyouki":"痕跡","yomi":"こんせき","memo":"抽象"},{"hyouki":"傷跡","yomi":"きずあと","memo":"抽象"},{"hyouki":"過ち","yomi":"あやまち","memo":"抽象"},{"hyouki":"罪","yomi":"つみ","memo":"抽象"},{"hyouki":"罰","yomi":"ばつ","memo":"抽象"},{"hyouki":"救い","yomi":"すくい","memo":"抽象"},{"hyouki":"救済","yomi":"きゅうさい","memo":"抽象"},{"hyouki":"祝福","yomi":"しゅくふく","memo":"抽象"},{"hyouki":"呪い","yomi":"のろい","memo":"抽象"},{"hyouki":"呪縛","yomi":"じゅばく","memo":"抽象"},{"hyouki":"解放","yomi":"かいほう","memo":"抽象"},{"hyouki":"選択","yomi":"せんたく","memo":"抽象"},{"hyouki":"決断","yomi":"けつだん","memo":"抽象"},{"hyouki":"決意","yomi":"けつい","memo":"抽象"},{"hyouki":"覚悟","yomi":"かくご","memo":"抽象"},{"hyouki":"勇敢","yomi":"ゆうかん","memo":"抽象"},{"hyouki":"臆病","yomi":"おくびょう","memo":"抽象"},{"hyouki":"弱気","yomi":"よわき","memo":"抽象"},{"hyouki":"強気","yomi":"つよき","memo":"抽象"},{"hyouki":"本気","yomi":"ほんき","memo":"抽象"},{"hyouki":"全力","yomi":"ぜんりょく","memo":"抽象"},{"hyouki":"天使","yomi":"てんし","memo":"抽象"},{"hyouki":"悪魔","yomi":"あくま","memo":"抽象"},{"hyouki":"神様","yomi":"かみさま","memo":"抽象"},{"hyouki":"女神","yomi":"めがみ","memo":"抽象"},{"hyouki":"妖精","yomi":"ようせい","memo":"抽象"},{"hyouki":"魔法","yomi":"まほう","memo":"抽象"},{"hyouki":"呪文","yomi":"じゅもん","memo":"抽象"},{"hyouki":"祈願","yomi":"きがん","memo":"抽象"},{"hyouki":"聖域","yomi":"せいいき","memo":"抽象"},{"hyouki":"楽園","yomi":"らくえん","memo":"抽象"},{"hyouki":"故郷","yomi":"こきょう","memo":"抽象"},{"hyouki":"旅情","yomi":"りょじょう","memo":"抽象"},{"hyouki":"放浪","yomi":"ほうろう","memo":"抽象"},{"hyouki":"漂流","yomi":"ひょうりゅう","memo":"抽象"},{"hyouki":"迷宮","yomi":"めいきゅう","memo":"抽象"},{"hyouki":"紫","yomi":"むらさき","memo":"色"},{"hyouki":"緋色","yomi":"ひいろ","memo":"色"},{"hyouki":"橙色","yomi":"だいだいいろ","memo":"色"},{"hyouki":"黄金","yomi":"おうごん","memo":"色"},{"hyouki":"琥珀","yomi":"こはく","memo":"色"},{"hyouki":"瑠璃","yomi":"るり","memo":"色"},{"hyouki":"翡翠","yomi":"ひすい","memo":"色"},{"hyouki":"桃色","yomi":"ももいろ","memo":"色"},{"hyouki":"藍色","yomi":"あいいろ","memo":"色"},{"hyouki":"茜色","yomi":"あかねいろ","memo":"色"},{"hyouki":"灰色","yomi":"はいいろ","memo":"色"},{"hyouki":"白銀","yomi":"はくぎん","memo":"色"},{"hyouki":"漆黒","yomi":"しっこく","memo":"色"},{"hyouki":"純白","yomi":"じゅんぱく","memo":"色"},{"hyouki":"虹色","yomi":"にじいろ","memo":"色"},{"hyouki":"七色","yomi":"なないろ","memo":"色"},{"hyouki":"淡色","yomi":"たんしょく","memo":"色"},{"hyouki":"鮮やか","yomi":"あざやか","memo":"色"},{"hyouki":"彩る","yomi":"いろどる","memo":"色"},{"hyouki":"染まる","yomi":"そまる","memo":"色"},{"hyouki":"染める","yomi":"そめる","memo":"色"},{"hyouki":"透き通る","yomi":"すきとおる","memo":"色"},{"hyouki":"煌めく","yomi":"きらめく","memo":"色"},{"hyouki":"煌き","yomi":"きらめき","memo":"色"},{"hyouki":"眩い","yomi":"まばゆい","memo":"色"},{"hyouki":"眩しい","yomi":"まぶしい","memo":"色"},{"hyouki":"輝かしい","yomi":"かがやかしい","memo":"色"},{"hyouki":"ほのかな","yomi":"ほのかな","memo":"色"},{"hyouki":"微か","yomi":"かすか","memo":"色"},{"hyouki":"白","yomi":"しろ","memo":"色"},{"hyouki":"黒","yomi":"くろ","memo":"色"},{"hyouki":"青","yomi":"あお","memo":"色"},{"hyouki":"赤","yomi":"あか","memo":"色"},{"hyouki":"金色","yomi":"きんいろ","memo":"色"},{"hyouki":"銀色","yomi":"ぎんいろ","memo":"色"},{"hyouki":"透明","yomi":"とうめい","memo":"色"},{"hyouki":"淡黄色","yomi":"たんおうしょく","memo":"色"},{"hyouki":"深紅","yomi":"しんく","memo":"色"},{"hyouki":"群青","yomi":"ぐんじょう","memo":"色"},{"hyouki":"音","yomi":"おと","memo":"音楽"},{"hyouki":"声音","yomi":"こわね","memo":"音楽"},{"hyouki":"旋律","yomi":"せんりつ","memo":"音楽"},{"hyouki":"音色","yomi":"おんいろ","memo":"音楽"},{"hyouki":"響き","yomi":"ひびき","memo":"音楽"},{"hyouki":"和音","yomi":"わおん","memo":"音楽"},{"hyouki":"音符","yomi":"おんぷ","memo":"音楽"},{"hyouki":"楽譜","yomi":"がくふ","memo":"音楽"},{"hyouki":"演奏","yomi":"えんそう","memo":"音楽"},{"hyouki":"合唱","yomi":"がっしょう","memo":"音楽"},{"hyouki":"独唱","yomi":"どくしょう","memo":"音楽"},{"hyouki":"拍子","yomi":"はくし","memo":"音楽"},{"hyouki":"静寂","yomi":"せいじゃく","memo":"音楽"},{"hyouki":"沈黙","yomi":"ちんもく","memo":"音楽"},{"hyouki":"囁き","yomi":"ささやき","memo":"音楽"},{"hyouki":"囀り","yomi":"さえずり","memo":"音楽"},{"hyouki":"ざわめき","yomi":"ざわめき","memo":"音楽"},{"hyouki":"雨音","yomi":"あまおと","memo":"音楽"},{"hyouki":"風音","yomi":"かぜおと","memo":"音楽"},{"hyouki":"鈴の音","yomi":"すずのおと","memo":"音楽"},{"hyouki":"鐘の音","yomi":"かねのおと","memo":"音楽"},{"hyouki":"汽笛","yomi":"きてき","memo":"音楽"},{"hyouki":"潮騒","yomi":"しおさい","memo":"音楽"},{"hyouki":"歌","yomi":"うた","memo":"音楽"},{"hyouki":"歌声","yomi":"うたごえ","memo":"音楽"},{"hyouki":"合図","yomi":"あいず","memo":"音楽"},{"hyouki":"ハミング","yomi":"はみんぐ","memo":"音楽"},{"hyouki":"輝き","yomi":"かがやき","memo":"動き"},{"hyouki":"揺れ","yomi":"ゆれ","memo":"動き"},{"hyouki":"揺らぎ","yomi":"ゆらぎ","memo":"動き"},{"hyouki":"流れる","yomi":"ながれる","memo":"動き"},{"hyouki":"舞う","yomi":"まう","memo":"動き"},{"hyouki":"駆ける","yomi":"かける","memo":"動き"},{"hyouki":"走る","yomi":"はしる","memo":"動き"},{"hyouki":"歩く","yomi":"あるく","memo":"動き"},{"hyouki":"飛ぶ","yomi":"とぶ","memo":"動き"},{"hyouki":"揺れる","yomi":"ゆれる","memo":"動き"},{"hyouki":"響く","yomi":"ひびく","memo":"動き"},{"hyouki":"輝く","yomi":"かがやく","memo":"動き"},{"hyouki":"照らす","yomi":"てらす","memo":"動き"},{"hyouki":"包む","yomi":"つつむ","memo":"動き"},{"hyouki":"抱く","yomi":"だく","memo":"動き"},{"hyouki":"抱きしめる","yomi":"だきしめる","memo":"動き"},{"hyouki":"繋ぐ","yomi":"つなぐ","memo":"動き"},{"hyouki":"繋がる","yomi":"つながる","memo":"動き"},{"hyouki":"溶ける","yomi":"とける","memo":"動き"},{"hyouki":"零れる","yomi":"こぼれる","memo":"動き"},{"hyouki":"零す","yomi":"こぼす","memo":"動き"},{"hyouki":"震える","yomi":"ふるえる","memo":"動き"},{"hyouki":"叫ぶ","yomi":"さけぶ","memo":"動き"},{"hyouki":"祈る","yomi":"いのる","memo":"動き"},{"hyouki":"願う","yomi":"ねがう","memo":"動き"},{"hyouki":"信じる","yomi":"しんじる","memo":"動き"},{"hyouki":"見つける","yomi":"みつける","memo":"動き"},{"hyouki":"見つめる","yomi":"みつめる","memo":"動き"},{"hyouki":"見送る","yomi":"みおくる","memo":"動き"},{"hyouki":"追いかける","yomi":"おいかける","memo":"動き"},{"hyouki":"手を伸ばす","yomi":"てをのばす","memo":"動き"},{"hyouki":"近づく","yomi":"ちかづく","memo":"動き"},{"hyouki":"離れる","yomi":"はなれる","memo":"動き"},{"hyouki":"消える","yomi":"きえる","memo":"動き"},{"hyouki":"残る","yomi":"のこる","memo":"動き"},{"hyouki":"変わる","yomi":"かわる","memo":"動き"},{"hyouki":"続く","yomi":"つづく","memo":"動き"},{"hyouki":"広がる","yomi":"ひろがる","memo":"動き"},{"hyouki":"満ちる","yomi":"みちる","memo":"動き"},{"hyouki":"溢れる","yomi":"あふれる","memo":"動き"},{"hyouki":"微笑む","yomi":"ほほえむ","memo":"動き"},{"hyouki":"泣く","yomi":"なく","memo":"動き"},{"hyouki":"笑う","yomi":"わらう","memo":"動き"},{"hyouki":"囁く","yomi":"ささやく","memo":"動き"},{"hyouki":"見上げる","yomi":"みあげる","memo":"動き"},{"hyouki":"見下ろす","yomi":"みおろす","memo":"動き"},{"hyouki":"振り向く","yomi":"ふりむく","memo":"動き"},{"hyouki":"振り返る","yomi":"ふりかえる","memo":"動き"},{"hyouki":"立ち止まる","yomi":"たちどまる","memo":"動き"},{"hyouki":"進む","yomi":"すすむ","memo":"動き"},{"hyouki":"戻る","yomi":"もどる","memo":"動き"},{"hyouki":"彷徨う","yomi":"さまよう","memo":"動き"},{"hyouki":"浮かぶ","yomi":"うかぶ","memo":"動き"},{"hyouki":"沈む","yomi":"しずむ","memo":"動き"},{"hyouki":"昇る","yomi":"のぼる","memo":"動き"},{"hyouki":"落ちる","yomi":"おちる","memo":"動き"},{"hyouki":"跳ねる","yomi":"はねる","memo":"動き"},{"hyouki":"弾む","yomi":"はずむ","memo":"動き"},{"hyouki":"踊る","yomi":"おどる","memo":"動き"},{"hyouki":"奏でる","yomi":"かなでる","memo":"動き"},{"hyouki":"綴る","yomi":"つづる","memo":"動き"},{"hyouki":"描く","yomi":"かく","memo":"動き"},{"hyouki":"刻む","yomi":"きざむ","memo":"動き"},{"hyouki":"紡ぐ","yomi":"つむぐ","memo":"動き"},{"hyouki":"織る","yomi":"おる","memo":"動き"},{"hyouki":"結ぶ","yomi":"むすぶ","memo":"動き"},{"hyouki":"解く","yomi":"ほどく","memo":"動き"},{"hyouki":"開く","yomi":"ひらく","memo":"動き"},{"hyouki":"閉じる","yomi":"とじる","memo":"動き"},{"hyouki":"満たす","yomi":"みたす","memo":"動き"},{"hyouki":"分かち合う","yomi":"わかちあう","memo":"動き"},{"hyouki":"寄り添う","yomi":"よりそう","memo":"動き"},{"hyouki":"支える","yomi":"ささえる","memo":"動き"},{"hyouki":"守る","yomi":"まもる","memo":"動き"},{"hyouki":"導かれる","yomi":"みちびかれる","memo":"動き"},{"hyouki":"癒す","yomi":"いやす","memo":"動き"},{"hyouki":"癒える","yomi":"いえる","memo":"動き"},{"hyouki":"駆け抜ける","yomi":"かけぬける","memo":"動き"},{"hyouki":"飛び立つ","yomi":"とびたつ","memo":"動き"},{"hyouki":"舞い上がる","yomi":"まいあがる","memo":"動き"},{"hyouki":"吹き抜ける","yomi":"ふきぬける","memo":"動き"},{"hyouki":"呼び合う","yomi":"よびあう","memo":"動き"},{"hyouki":"分かれる","yomi":"わかれる","memo":"動き"},{"hyouki":"巡る","yomi":"めぐる","memo":"動き"},{"hyouki":"辿る","yomi":"たどる","memo":"動き"},{"hyouki":"辿り着く","yomi":"たどりつく","memo":"動き"},{"hyouki":"漂う","yomi":"さまよう","memo":"動き"},{"hyouki":"揺さぶる","yomi":"ゆさぶる","memo":"動き"},{"hyouki":"打ち震える","yomi":"うちふるえる","memo":"動き"},{"hyouki":"街","yomi":"まち","memo":"情景"},{"hyouki":"街角","yomi":"まちかど","memo":"情景"},{"hyouki":"街並み","yomi":"まちなみ","memo":"情景"},{"hyouki":"駅","yomi":"えき","memo":"情景"},{"hyouki":"ホーム","yomi":"ほーむ","memo":"情景"},{"hyouki":"電車","yomi":"でんしゃ","memo":"情景"},{"hyouki":"改札","yomi":"かいさつ","memo":"情景"},{"hyouki":"信号","yomi":"しんごう","memo":"情景"},{"hyouki":"交差点","yomi":"こうさてん","memo":"情景"},{"hyouki":"横断歩道","yomi":"おうだんほどう","memo":"情景"},{"hyouki":"路地","yomi":"ろじ","memo":"情景"},{"hyouki":"裏通り","yomi":"うらどおり","memo":"情景"},{"hyouki":"商店街","yomi":"しょうてんがい","memo":"情景"},{"hyouki":"公園","yomi":"こうえん","memo":"情景"},{"hyouki":"噴水","yomi":"ふんすい","memo":"情景"},{"hyouki":"ベンチ","yomi":"べんち","memo":"情景"},{"hyouki":"窓","yomi":"まど","memo":"情景"},{"hyouki":"窓辺","yomi":"まどべ","memo":"情景"},{"hyouki":"屋上","yomi":"おくじょう","memo":"情景"},{"hyouki":"階段","yomi":"かいだん","memo":"情景"},{"hyouki":"橋","yomi":"はし","memo":"情景"},{"hyouki":"坂道","yomi":"さかみち","memo":"情景"},{"hyouki":"並木道","yomi":"なみきみち","memo":"情景"},{"hyouki":"通学路","yomi":"つうがくろ","memo":"情景"},{"hyouki":"校舎","yomi":"こうしゃ","memo":"情景"},{"hyouki":"教室","yomi":"きょうしつ","memo":"情景"},{"hyouki":"校庭","yomi":"こうてい","memo":"情景"},{"hyouki":"黒板","yomi":"こくばん","memo":"情景"},{"hyouki":"チャイム","yomi":"ちゃいむ","memo":"情景"},{"hyouki":"卒業","yomi":"そつぎょう","memo":"情景"},{"hyouki":"入学","yomi":"にゅうがく","memo":"情景"},{"hyouki":"制服","yomi":"せいふく","memo":"情景"},{"hyouki":"夏祭り","yomi":"なつまつり","memo":"情景"},{"hyouki":"花火大会","yomi":"はなびたいかい","memo":"情景"},{"hyouki":"文化祭","yomi":"ぶんかさい","memo":"情景"},{"hyouki":"教科書","yomi":"きょうかしょ","memo":"情景"},{"hyouki":"机","yomi":"つくえ","memo":"情景"},{"hyouki":"廊下","yomi":"ろうか","memo":"情景"},{"hyouki":"自転車","yomi":"じてんしゃ","memo":"情景"},{"hyouki":"傘","yomi":"かさ","memo":"情景"},{"hyouki":"カフェ","yomi":"かふぇ","memo":"情景"},{"hyouki":"図書館","yomi":"としょかん","memo":"情景"},{"hyouki":"夜景","yomi":"やけい","memo":"情景"},{"hyouki":"灯り","yomi":"あかり","memo":"情景"},{"hyouki":"街灯","yomi":"がいとう","memo":"情景"},{"hyouki":"ネオン","yomi":"ねおん","memo":"情景"},{"hyouki":"屋台","yomi":"やたい","memo":"情景"},{"hyouki":"雑踏","yomi":"ざっとう","memo":"情景"},{"hyouki":"人混み","yomi":"ひとごみ","memo":"情景"},{"hyouki":"喧騒","yomi":"けんそう","memo":"情景"},{"hyouki":"元旦","yomi":"がんたん","memo":"季節"},{"hyouki":"正月","yomi":"しょうがつ","memo":"季節"},{"hyouki":"初詣","yomi":"はつもうで","memo":"季節"},{"hyouki":"七夕","yomi":"たなばた","memo":"季節"},{"hyouki":"お盆","yomi":"おぼん","memo":"季節"},{"hyouki":"花見","yomi":"はなみ","memo":"季節"},{"hyouki":"月見","yomi":"つきみ","memo":"季節"},{"hyouki":"紅葉狩り","yomi":"もみじがり","memo":"季節"},{"hyouki":"雪景色","yomi":"ゆきげしき","memo":"季節"},{"hyouki":"初恋の頃","yomi":"はつこいのころ","memo":"季節"},{"hyouki":"夏休み","yomi":"なつやすみ","memo":"季節"},{"hyouki":"冬休み","yomi":"ふゆやすみ","memo":"季節"},{"hyouki":"梅雨明け","yomi":"つゆあけ","memo":"季節"},{"hyouki":"残暑","yomi":"ざんしょ","memo":"季節"},{"hyouki":"小春日和","yomi":"こはるびより","memo":"季節"},{"hyouki":"師走","yomi":"しわす","memo":"季節"},{"hyouki":"弥生","yomi":"やよい","memo":"季節"},{"hyouki":"卯月","yomi":"うづき","memo":"季節"},{"hyouki":"皐月","yomi":"さつき","memo":"季節"},{"hyouki":"水無月","yomi":"みなづき","memo":"季節"},{"hyouki":"文月","yomi":"ふづき","memo":"季節"},{"hyouki":"長月","yomi":"ながつき","memo":"季節"},{"hyouki":"霜月","yomi":"しもつき","memo":"季節"},{"hyouki":"如月","yomi":"きさらぎ","memo":"季節"},{"hyouki":"静かな","yomi":"しずかな","memo":"様子"},{"hyouki":"賑やかな","yomi":"にぎやかな","memo":"様子"},{"hyouki":"穏やかな","yomi":"おだやかな","memo":"様子"},{"hyouki":"激しい","yomi":"はげしい","memo":"様子"},{"hyouki":"優美な","yomi":"ゆうびな","memo":"様子"},{"hyouki":"華やかな","yomi":"はなやかな","memo":"様子"},{"hyouki":"地味な","yomi":"じみな","memo":"様子"},{"hyouki":"温かい","yomi":"あたかい","memo":"様子"},{"hyouki":"冷たい","yomi":"つめたい","memo":"様子"},{"hyouki":"熱い","yomi":"あつい","memo":"様子"},{"hyouki":"柔らかい","yomi":"やわらかい","memo":"様子"},{"hyouki":"硬い","yomi":"かたい","memo":"様子"},{"hyouki":"脆弱な","yomi":"ぜいじゃくな","memo":"様子"},{"hyouki":"力強い","yomi":"ちからづよい","memo":"様子"},{"hyouki":"繊細な","yomi":"せんさいな","memo":"様子"},{"hyouki":"壮大な","yomi":"そうだいな","memo":"様子"},{"hyouki":"巨大な","yomi":"きょだいな","memo":"様子"},{"hyouki":"微小な","yomi":"びしょうな","memo":"様子"},{"hyouki":"遠い","yomi":"とおい","memo":"様子"},{"hyouki":"近い","yomi":"ちかい","memo":"様子"},{"hyouki":"広い","yomi":"ひろい","memo":"様子"},{"hyouki":"狭い","yomi":"せまい","memo":"様子"},{"hyouki":"深い","yomi":"ふかい","memo":"様子"},{"hyouki":"浅い","yomi":"あさい","memo":"様子"},{"hyouki":"高い","yomi":"たかい","memo":"様子"},{"hyouki":"低い","yomi":"ひくい","memo":"様子"},{"hyouki":"速い","yomi":"はやい","memo":"様子"},{"hyouki":"遅い","yomi":"おそい","memo":"様子"},{"hyouki":"新しい","yomi":"あたらしい","memo":"様子"},{"hyouki":"古い","yomi":"ふるい","memo":"様子"},{"hyouki":"明るい","yomi":"あかるい","memo":"様子"},{"hyouki":"暗い","yomi":"くらい","memo":"様子"},{"hyouki":"清らか","yomi":"きよらか","memo":"様子"},{"hyouki":"濁った","yomi":"にごった","memo":"様子"},{"hyouki":"澄んだ","yomi":"すんだ","memo":"様子"},{"hyouki":"透き通った","yomi":"すきとおった","memo":"様子"},{"hyouki":"鮮明な","yomi":"せんめいな","memo":"様子"},{"hyouki":"曖昧な","yomi":"あいまいな","memo":"様子"},{"hyouki":"確かな","yomi":"たしかな","memo":"様子"},{"hyouki":"不確かな","yomi":"ふたしかな","memo":"様子"},{"hyouki":"永久の","yomi":"えいきゅうの","memo":"様子"},{"hyouki":"一時的な","yomi":"いちじてきな","memo":"様子"},{"hyouki":"尊い","yomi":"とうとい","memo":"様子"},{"hyouki":"貴重な","yomi":"きちょうな","memo":"様子"},{"hyouki":"無垢な","yomi":"むくな","memo":"様子"},{"hyouki":"託す","yomi":"たくす","memo":"動き"},{"hyouki":"捧げる","yomi":"ささげる","memo":"動き"},{"hyouki":"授ける","yomi":"さずける","memo":"動き"},{"hyouki":"赦す","yomi":"ゆるす","memo":"動き"},{"hyouki":"許す","yomi":"ゆるす","memo":"動き"},{"hyouki":"囚われる","yomi":"とらわれる","memo":"動き"},{"hyouki":"縛られる","yomi":"しばられる","memo":"動き"},{"hyouki":"抗う","yomi":"あらがう","memo":"動き"},{"hyouki":"逆らう","yomi":"さからう","memo":"動き"},{"hyouki":"従う","yomi":"したがう","memo":"動き"},{"hyouki":"貫く","yomi":"つらぬく","memo":"動き"},{"hyouki":"突き抜ける","yomi":"つきぬける","memo":"動き"},{"hyouki":"超える","yomi":"こえる","memo":"動き"},{"hyouki":"乗り越える","yomi":"のりこえる","memo":"動き"},{"hyouki":"踏み出す","yomi":"ふみだす","memo":"動き"},{"hyouki":"漂着する","yomi":"ひょうちゃくする","memo":"動き"},{"hyouki":"辿りつく","yomi":"たどりつく","memo":"動き"},{"hyouki":"巡り合う","yomi":"めぐりあう","memo":"動き"},{"hyouki":"行き交う","yomi":"いきかう","memo":"動き"},{"hyouki":"すれ違う","yomi":"すれちがう","memo":"動き"},{"hyouki":"寄り道する","yomi":"よりみちする","memo":"動き"},{"hyouki":"引き返す","yomi":"ひきかえす","memo":"動き"},{"hyouki":"立ち向かう","yomi":"たちむかう","memo":"動き"},{"hyouki":"目覚める","yomi":"めざめる","memo":"動き"},{"hyouki":"眠る","yomi":"ねむる","memo":"動き"},{"hyouki":"夢見る","yomi":"ゆめみる","memo":"動き"},{"hyouki":"思い出す","yomi":"おもいだす","memo":"動き"},{"hyouki":"忘れる","yomi":"わすれる","memo":"動き"},{"hyouki":"刻まれる","yomi":"きざまれる","memo":"動き"},{"hyouki":"染み込む","yomi":"しみこむ","memo":"動き"},{"hyouki":"浸る","yomi":"ひたる","memo":"動き"},{"hyouki":"満たされる","yomi":"みたされる","memo":"動き"},{"hyouki":"溢れ出す","yomi":"あふれだす","memo":"動き"},{"hyouki":"芽生える","yomi":"めばえる","memo":"動き"},{"hyouki":"育つ","yomi":"そだつ","memo":"動き"},{"hyouki":"根付く","yomi":"ねづく","memo":"動き"},{"hyouki":"枯れる","yomi":"かれる","memo":"動き"},{"hyouki":"咲く","yomi":"さく","memo":"動き"},{"hyouki":"散る","yomi":"ちる","memo":"動き"},{"hyouki":"実る","yomi":"みのる","memo":"動き"},{"hyouki":"芽吹く","yomi":"めぶく","memo":"動き"},{"hyouki":"命運","yomi":"めいうん","memo":"抽象"},{"hyouki":"天命","yomi":"てんめい","memo":"抽象"},{"hyouki":"宿命","yomi":"しゅくめい","memo":"抽象"},{"hyouki":"因縁","yomi":"いんねん","memo":"抽象"},{"hyouki":"縁","yomi":"えん","memo":"抽象"},{"hyouki":"巡り合わせ","yomi":"めぐりあわせ","memo":"抽象"},{"hyouki":"巡礁","yomi":"じゅんしょう","memo":"抽象"},{"hyouki":"導線","yomi":"どうせん","memo":"抽象"},{"hyouki":"光明","yomi":"こうみょう","memo":"抽象"},{"hyouki":"一筋の光","yomi":"ひとすじのひかり","memo":"抽象"},{"hyouki":"一筋","yomi":"ひとすじ","memo":"抽象"},{"hyouki":"一片","yomi":"いっぺん","memo":"抽象"},{"hyouki":"欠片","yomi":"かけら","memo":"抽象"},{"hyouki":"断片","yomi":"だんぺん","memo":"抽象"},{"hyouki":"残像","yomi":"ざんぞう","memo":"抽象"},{"hyouki":"面影","yomi":"おもかげ","memo":"抽象"},{"hyouki":"姿","yomi":"すがた","memo":"抽象"},{"hyouki":"影法師","yomi":"かげぼうし","memo":"抽象"},{"hyouki":"分身","yomi":"ぶんしん","memo":"抽象"},{"hyouki":"写し","yomi":"うつし","memo":"抽象"},{"hyouki":"胸キュン","yomi":"むねきゅん","memo":"感情"},{"hyouki":"ときめき","yomi":"ときめき","memo":"感情"},{"hyouki":"ときめく","yomi":"ときめく","memo":"感情"},{"hyouki":"高鳴る","yomi":"たかなる","memo":"感情"},{"hyouki":"高鳴り","yomi":"たかなり","memo":"感情"},{"hyouki":"熱くなる","yomi":"あつくなる","memo":"感情"},{"hyouki":"冷め切る","yomi":"さめきる","memo":"感情"},{"hyouki":"燃え上がる","yomi":"もえあがる","memo":"感情"},{"hyouki":"燃える","yomi":"もえる","memo":"感情"},{"hyouki":"沸き立つ","yomi":"わきたつ","memo":"感情"},{"hyouki":"沸き上がる","yomi":"わきあがる","memo":"感情"},{"hyouki":"満たされない","yomi":"みたされない","memo":"感情"},{"hyouki":"満たされる想い","yomi":"みたされるおもい","memo":"感情"},{"hyouki":"揺れる心","yomi":"ゆれるこころ","memo":"感情"},{"hyouki":"締め付けられる","yomi":"しめつけられる","memo":"感情"},{"hyouki":"張り裂ける","yomi":"はりさける","memo":"感情"},{"hyouki":"引き裂かれる","yomi":"ひきさかれる","memo":"感情"},{"hyouki":"溶けてゆく","yomi":"とけてゆく","memo":"感情"},{"hyouki":"夕凪","yomi":"ゆうなぎ","memo":"自然"},{"hyouki":"朝凪","yomi":"あさなぎ","memo":"自然"},{"hyouki":"海鳴り","yomi":"うみなり","memo":"自然"},{"hyouki":"水音","yomi":"みずおと","memo":"自然"},{"hyouki":"木立","yomi":"こだち","memo":"自然"},{"hyouki":"木々","yomi":"きぎ","memo":"自然"},{"hyouki":"青々","yomi":"あおあお","memo":"自然"},{"hyouki":"茂み","yomi":"しげみ","memo":"自然"},{"hyouki":"草むら","yomi":"くさむら","memo":"自然"},{"hyouki":"花弁","yomi":"かべん","memo":"自然"},{"hyouki":"花影","yomi":"はなかげ","memo":"自然"},{"hyouki":"月夜","yomi":"つきよ","memo":"自然"},{"hyouki":"星夜","yomi":"せいや","memo":"自然"},{"hyouki":"満天の星","yomi":"まんてんのほし","memo":"自然"},{"hyouki":"夜空一面","yomi":"よぞらいちめん","memo":"自然"},{"hyouki":"一刻一刻","yomi":"いっこくいっこく","memo":"時間"},{"hyouki":"瞬く間","yomi":"またたくま","memo":"時間"},{"hyouki":"数瞬","yomi":"すうしゅん","memo":"時間"},{"hyouki":"束の間","yomi":"つかのま","memo":"時間"},{"hyouki":"片隅の時間","yomi":"かたすみのじかん","memo":"時間"},{"hyouki":"時の流れ","yomi":"ときのながれ","memo":"時間"},{"hyouki":"時を超えて","yomi":"ときをこえて","memo":"時間"},{"hyouki":"時を刻む","yomi":"ときをきざむ","memo":"時間"},{"hyouki":"止まった時間","yomi":"とまったじかん","memo":"時間"},{"hyouki":"懸命な","yomi":"けんめいな","memo":"様子"},{"hyouki":"無垢な瞳","yomi":"むくなひとみ","memo":"様子"},{"hyouki":"ありのまま","yomi":"ありのまま","memo":"様子"},{"hyouki":"そのままの","yomi":"そのままの","memo":"様子"},{"hyouki":"剥き出しの","yomi":"むきだしの","memo":"様子"},{"hyouki":"丸ごとの","yomi":"まるごとの","memo":"様子"},{"hyouki":"等身大の","yomi":"とうしんだいの","memo":"様子"},{"hyouki":"変わらない","yomi":"かわらない","memo":"様子"},{"hyouki":"揺るがない","yomi":"ゆるがない","memo":"様子"},{"hyouki":"折れない","yomi":"おれない","memo":"様子"}];
+var SEED_WORDS=[{"hyouki":"空","yomi":"そら","memo":"自然"},{"hyouki":"海","yomi":"うみ","memo":"自然"},{"hyouki":"山","yomi":"やま","memo":"自然"},{"hyouki":"川","yomi":"かわ","memo":"自然"},{"hyouki":"森","yomi":"もり","memo":"自然"},{"hyouki":"花","yomi":"はな","memo":"自然"},{"hyouki":"月","yomi":"つき","memo":"自然"},{"hyouki":"星","yomi":"ほし","memo":"自然"},{"hyouki":"太陽","yomi":"たいよう","memo":"自然"},{"hyouki":"雲","yomi":"くも","memo":"自然"},{"hyouki":"雨","yomi":"あめ","memo":"自然"},{"hyouki":"雪","yomi":"ゆき","memo":"自然"},{"hyouki":"風","yomi":"かぜ","memo":"自然"},{"hyouki":"嵐","yomi":"あらし","memo":"自然"},{"hyouki":"虹","yomi":"にじ","memo":"自然"},{"hyouki":"霧","yomi":"きり","memo":"自然"},{"hyouki":"波","yomi":"なみ","memo":"自然"},{"hyouki":"砂浜","yomi":"すなはま","memo":"自然"},{"hyouki":"岩","yomi":"いわ","memo":"自然"},{"hyouki":"滝","yomi":"たき","memo":"自然"},{"hyouki":"湖","yomi":"みずうみ","memo":"自然"},{"hyouki":"砂漠","yomi":"さばく","memo":"自然"},{"hyouki":"草原","yomi":"そうげん","memo":"自然"},{"hyouki":"谷","yomi":"たに","memo":"自然"},{"hyouki":"泡","yomi":"あわ","memo":"自然"},{"hyouki":"氷","yomi":"こおり","memo":"自然"},{"hyouki":"炎","yomi":"ほのお","memo":"自然"},{"hyouki":"光","yomi":"ひかり","memo":"自然"},{"hyouki":"闇","yomi":"やみ","memo":"自然"},{"hyouki":"夜明け","yomi":"よあけ","memo":"自然"},{"hyouki":"夕焼け","yomi":"ゆうやけ","memo":"自然"},{"hyouki":"朝日","yomi":"あさひ","memo":"自然"},{"hyouki":"銀河","yomi":"ぎんが","memo":"自然"},{"hyouki":"宇宙","yomi":"うちゅう","memo":"自然"},{"hyouki":"彗星","yomi":"すいせい","memo":"自然"},{"hyouki":"流れ星","yomi":"ながれぼし","memo":"自然"},{"hyouki":"夜空","yomi":"よぞら","memo":"自然"},{"hyouki":"地平線","yomi":"ちへいせん","memo":"自然"},{"hyouki":"水平線","yomi":"すいへいせん","memo":"自然"},{"hyouki":"大地","yomi":"だいち","memo":"自然"},{"hyouki":"土","yomi":"つち","memo":"自然"},{"hyouki":"石","yomi":"いし","memo":"自然"},{"hyouki":"葉","yomi":"は","memo":"自然"},{"hyouki":"木","yomi":"き","memo":"自然"},{"hyouki":"根","yomi":"ね","memo":"自然"},{"hyouki":"実","yomi":"み","memo":"自然"},{"hyouki":"種","yomi":"たね","memo":"自然"},{"hyouki":"苔","yomi":"こけ","memo":"自然"},{"hyouki":"蔦","yomi":"つた","memo":"自然"},{"hyouki":"竹","yomi":"たけ","memo":"自然"},{"hyouki":"松","yomi":"まつ","memo":"自然"},{"hyouki":"桜","yomi":"さくら","memo":"自然"},{"hyouki":"梅","yomi":"うめ","memo":"自然"},{"hyouki":"藤","yomi":"ふじ","memo":"自然"},{"hyouki":"蓮","yomi":"はす","memo":"自然"},{"hyouki":"薔薇","yomi":"ばら","memo":"自然"},{"hyouki":"向日葵","yomi":"ひまわり","memo":"自然"},{"hyouki":"雑草","yomi":"ざっそう","memo":"自然"},{"hyouki":"霜","yomi":"しも","memo":"自然"},{"hyouki":"露","yomi":"つゆ","memo":"自然"},{"hyouki":"霰","yomi":"あられ","memo":"自然"},{"hyouki":"稲妻","yomi":"いなずま","memo":"自然"},{"hyouki":"潮","yomi":"しお","memo":"自然"},{"hyouki":"珊瑚","yomi":"さんご","memo":"自然"},{"hyouki":"深海","yomi":"しんかい","memo":"自然"},{"hyouki":"愛","yomi":"あい","memo":"感情"},{"hyouki":"恋","yomi":"こい","memo":"感情"},{"hyouki":"夢","yomi":"ゆめ","memo":"感情"},{"hyouki":"希望","yomi":"きぼう","memo":"感情"},{"hyouki":"悲しみ","yomi":"かなしみ","memo":"感情"},{"hyouki":"喜び","yomi":"よろこび","memo":"感情"},{"hyouki":"怒り","yomi":"いかり","memo":"感情"},{"hyouki":"孤独","yomi":"こどく","memo":"感情"},{"hyouki":"寂しさ","yomi":"さびしさ","memo":"感情"},{"hyouki":"切なさ","yomi":"せつなさ","memo":"感情"},{"hyouki":"憧れ","yomi":"あこがれ","memo":"感情"},{"hyouki":"懐かしさ","yomi":"なつかしさ","memo":"感情"},{"hyouki":"後悔","yomi":"こうかい","memo":"感情"},{"hyouki":"感謝","yomi":"かんしゃ","memo":"感情"},{"hyouki":"許し","yomi":"ゆるし","memo":"感情"},{"hyouki":"嫉妬","yomi":"しっと","memo":"感情"},{"hyouki":"不安","yomi":"ふあん","memo":"感情"},{"hyouki":"恐れ","yomi":"おそれ","memo":"感情"},{"hyouki":"勇気","yomi":"ゆうき","memo":"感情"},{"hyouki":"誇り","yomi":"ほこり","memo":"感情"},{"hyouki":"羞恥","yomi":"しゅうち","memo":"感情"},{"hyouki":"温もり","yomi":"ぬくもり","memo":"感情"},{"hyouki":"痛み","yomi":"いたみ","memo":"感情"},{"hyouki":"迷い","yomi":"まよい","memo":"感情"},{"hyouki":"諦め","yomi":"あきらめ","memo":"感情"},{"hyouki":"執着","yomi":"しゅうちゃく","memo":"感情"},{"hyouki":"解放","yomi":"かいほう","memo":"感情"},{"hyouki":"癒し","yomi":"いやし","memo":"感情"},{"hyouki":"興奮","yomi":"こうふん","memo":"感情"},{"hyouki":"幸せ","yomi":"しあわせ","memo":"感情"},{"hyouki":"絶望","yomi":"ぜつぼう","memo":"感情"},{"hyouki":"焦り","yomi":"あせり","memo":"感情"},{"hyouki":"葛藤","yomi":"かっとう","memo":"感情"},{"hyouki":"信頼","yomi":"しんらい","memo":"感情"},{"hyouki":"失望","yomi":"しつぼう","memo":"感情"},{"hyouki":"歓喜","yomi":"かんき","memo":"感情"},{"hyouki":"虚無","yomi":"きょむ","memo":"感情"},{"hyouki":"渇望","yomi":"かつぼう","memo":"感情"},{"hyouki":"安堵","yomi":"あんど","memo":"感情"},{"hyouki":"戸惑い","yomi":"とまどい","memo":"感情"},{"hyouki":"苦しみ","yomi":"くるしみ","memo":"感情"},{"hyouki":"恥","yomi":"はじ","memo":"感情"},{"hyouki":"驚き","yomi":"おどろき","memo":"感情"},{"hyouki":"心","yomi":"こころ","memo":"身体"},{"hyouki":"声","yomi":"こえ","memo":"身体"},{"hyouki":"手","yomi":"て","memo":"身体"},{"hyouki":"目","yomi":"め","memo":"身体"},{"hyouki":"唇","yomi":"くちびる","memo":"身体"},{"hyouki":"涙","yomi":"なみだ","memo":"身体"},{"hyouki":"息","yomi":"いき","memo":"身体"},{"hyouki":"瞳","yomi":"ひとみ","memo":"身体"},{"hyouki":"胸","yomi":"むね","memo":"身体"},{"hyouki":"体","yomi":"からだ","memo":"身体"},{"hyouki":"骨","yomi":"ほね","memo":"身体"},{"hyouki":"血","yomi":"ち","memo":"身体"},{"hyouki":"肌","yomi":"はだ","memo":"身体"},{"hyouki":"耳","yomi":"みみ","memo":"身体"},{"hyouki":"指","yomi":"ゆび","memo":"身体"},{"hyouki":"足","yomi":"あし","memo":"身体"},{"hyouki":"背中","yomi":"せなか","memo":"身体"},{"hyouki":"髪","yomi":"かみ","memo":"身体"},{"hyouki":"額","yomi":"ひたい","memo":"身体"},{"hyouki":"頬","yomi":"ほほ","memo":"身体"},{"hyouki":"脈拍","yomi":"みゃくはく","memo":"身体"},{"hyouki":"吐息","yomi":"といき","memo":"身体"},{"hyouki":"ため息","yomi":"ためいき","memo":"身体"},{"hyouki":"鼓動","yomi":"こどう","memo":"身体"},{"hyouki":"魂","yomi":"たましい","memo":"身体"},{"hyouki":"記憶","yomi":"きおく","memo":"身体"},{"hyouki":"影","yomi":"かげ","memo":"身体"},{"hyouki":"姿","yomi":"すがた","memo":"身体"},{"hyouki":"笑顔","yomi":"えがお","memo":"身体"},{"hyouki":"今","yomi":"いま","memo":"時間"},{"hyouki":"昨日","yomi":"きのう","memo":"時間"},{"hyouki":"明日","yomi":"あした","memo":"時間"},{"hyouki":"瞬間","yomi":"しゅんかん","memo":"時間"},{"hyouki":"永遠","yomi":"えいえん","memo":"時間"},{"hyouki":"過去","yomi":"かこ","memo":"時間"},{"hyouki":"未来","yomi":"みらい","memo":"時間"},{"hyouki":"朝","yomi":"あさ","memo":"時間"},{"hyouki":"昼","yomi":"ひる","memo":"時間"},{"hyouki":"夜","yomi":"よる","memo":"時間"},{"hyouki":"夕","yomi":"ゆう","memo":"時間"},{"hyouki":"時","yomi":"とき","memo":"時間"},{"hyouki":"季節","yomi":"きせつ","memo":"時間"},{"hyouki":"春","yomi":"はる","memo":"時間"},{"hyouki":"夏","yomi":"なつ","memo":"時間"},{"hyouki":"秋","yomi":"あき","memo":"時間"},{"hyouki":"冬","yomi":"ふゆ","memo":"時間"},{"hyouki":"夜中","yomi":"よなか","memo":"時間"},{"hyouki":"黄昏","yomi":"たそがれ","memo":"時間"},{"hyouki":"夜明け前","yomi":"よあけまえ","memo":"時間"},{"hyouki":"真夜中","yomi":"まよなか","memo":"時間"},{"hyouki":"刹那","yomi":"せつな","memo":"時間"},{"hyouki":"過ぎ去る","yomi":"すぎさる","memo":"時間"},{"hyouki":"繰り返し","yomi":"くりかえし","memo":"時間"},{"hyouki":"道","yomi":"みち","memo":"場所"},{"hyouki":"橋","yomi":"はし","memo":"場所"},{"hyouki":"街","yomi":"まち","memo":"場所"},{"hyouki":"部屋","yomi":"へや","memo":"場所"},{"hyouki":"窓","yomi":"まど","memo":"場所"},{"hyouki":"扉","yomi":"とびら","memo":"場所"},{"hyouki":"空間","yomi":"くうかん","memo":"場所"},{"hyouki":"距離","yomi":"きょり","memo":"場所"},{"hyouki":"果て","yomi":"はて","memo":"場所"},{"hyouki":"彼方","yomi":"かなた","memo":"場所"},{"hyouki":"此処","yomi":"ここ","memo":"場所"},{"hyouki":"迷宮","yomi":"めいきゅう","memo":"場所"},{"hyouki":"故郷","yomi":"ふるさと","memo":"場所"},{"hyouki":"旅","yomi":"たび","memo":"場所"},{"hyouki":"空港","yomi":"くうこう","memo":"場所"},{"hyouki":"駅","yomi":"えき","memo":"場所"},{"hyouki":"海岸","yomi":"かいがん","memo":"場所"},{"hyouki":"砂丘","yomi":"さきゅう","memo":"場所"},{"hyouki":"廃墟","yomi":"はいきょ","memo":"場所"},{"hyouki":"天国","yomi":"てんごく","memo":"場所"},{"hyouki":"地獄","yomi":"じごく","memo":"場所"},{"hyouki":"楽園","yomi":"らくえん","memo":"場所"},{"hyouki":"迷子","yomi":"まいご","memo":"場所"},{"hyouki":"境界","yomi":"きょうかい","memo":"場所"},{"hyouki":"交差点","yomi":"こうさてん","memo":"場所"},{"hyouki":"歌","yomi":"うた","memo":"音楽"},{"hyouki":"音","yomi":"おと","memo":"音楽"},{"hyouki":"旋律","yomi":"せんりつ","memo":"音楽"},{"hyouki":"リズム","yomi":"りずむ","memo":"音楽"},{"hyouki":"詩","yomi":"し","memo":"音楽"},{"hyouki":"言葉","yomi":"ことば","memo":"音楽"},{"hyouki":"沈黙","yomi":"ちんもく","memo":"音楽"},{"hyouki":"響き","yomi":"ひびき","memo":"音楽"},{"hyouki":"調べ","yomi":"しらべ","memo":"音楽"},{"hyouki":"和音","yomi":"わおん","memo":"音楽"},{"hyouki":"余韻","yomi":"よいん","memo":"音楽"},{"hyouki":"静寂","yomi":"せいじゃく","memo":"音楽"},{"hyouki":"叫び","yomi":"さけび","memo":"音楽"},{"hyouki":"囁き","yomi":"ささやき","memo":"音楽"},{"hyouki":"鼓","yomi":"つづみ","memo":"音楽"},{"hyouki":"弦","yomi":"げん","memo":"音楽"},{"hyouki":"鐘","yomi":"かね","memo":"音楽"},{"hyouki":"笛","yomi":"ふえ","memo":"音楽"},{"hyouki":"走る","yomi":"はしる","memo":"行動"},{"hyouki":"歩く","yomi":"あるく","memo":"行動"},{"hyouki":"飛ぶ","yomi":"とぶ","memo":"行動"},{"hyouki":"落ちる","yomi":"おちる","memo":"行動"},{"hyouki":"泳ぐ","yomi":"およぐ","memo":"行動"},{"hyouki":"眠る","yomi":"ねむる","memo":"行動"},{"hyouki":"起きる","yomi":"おきる","memo":"行動"},{"hyouki":"探す","yomi":"さがす","memo":"行動"},{"hyouki":"見つける","yomi":"みつける","memo":"行動"},{"hyouki":"迷う","yomi":"まよう","memo":"行動"},{"hyouki":"逃げる","yomi":"にげる","memo":"行動"},{"hyouki":"戦う","yomi":"たたかう","memo":"行動"},{"hyouki":"守る","yomi":"まもる","memo":"行動"},{"hyouki":"壊す","yomi":"こわす","memo":"行動"},{"hyouki":"創る","yomi":"つくる","memo":"行動"},{"hyouki":"生きる","yomi":"いきる","memo":"行動"},{"hyouki":"死ぬ","yomi":"しぬ","memo":"行動"},{"hyouki":"輝く","yomi":"かがやく","memo":"行動"},{"hyouki":"消える","yomi":"きえる","memo":"行動"},{"hyouki":"燃える","yomi":"もえる","memo":"行動"},{"hyouki":"溶ける","yomi":"とける","memo":"行動"},{"hyouki":"揺れる","yomi":"ゆれる","memo":"行動"},{"hyouki":"震える","yomi":"ふるえる","memo":"行動"},{"hyouki":"叫ぶ","yomi":"さけぶ","memo":"行動"},{"hyouki":"囁く","yomi":"ささやく","memo":"行動"},{"hyouki":"泣く","yomi":"なく","memo":"行動"},{"hyouki":"笑う","yomi":"わらう","memo":"行動"},{"hyouki":"祈る","yomi":"いのる","memo":"行動"},{"hyouki":"願う","yomi":"ねがう","memo":"行動"},{"hyouki":"信じる","yomi":"しんじる","memo":"行動"},{"hyouki":"疑う","yomi":"うたがう","memo":"行動"},{"hyouki":"選ぶ","yomi":"えらぶ","memo":"行動"},{"hyouki":"諦める","yomi":"あきらめる","memo":"行動"},{"hyouki":"挑む","yomi":"いどむ","memo":"行動"},{"hyouki":"踊る","yomi":"おどる","memo":"行動"},{"hyouki":"歌う","yomi":"うたう","memo":"行動"},{"hyouki":"奏でる","yomi":"かなでる","memo":"行動"},{"hyouki":"描く","yomi":"えがく","memo":"行動"},{"hyouki":"織る","yomi":"おる","memo":"行動"},{"hyouki":"刻む","yomi":"きざむ","memo":"行動"},{"hyouki":"君","yomi":"きみ","memo":"関係"},{"hyouki":"あなた","yomi":"あなた","memo":"関係"},{"hyouki":"私","yomi":"わたし","memo":"関係"},{"hyouki":"僕","yomi":"ぼく","memo":"関係"},{"hyouki":"仲間","yomi":"なかま","memo":"関係"},{"hyouki":"友達","yomi":"ともだち","memo":"関係"},{"hyouki":"恋人","yomi":"こいびと","memo":"関係"},{"hyouki":"家族","yomi":"かぞく","memo":"関係"},{"hyouki":"子供","yomi":"こども","memo":"関係"},{"hyouki":"大人","yomi":"おとな","memo":"関係"},{"hyouki":"出会い","yomi":"であい","memo":"関係"},{"hyouki":"別れ","yomi":"わかれ","memo":"関係"},{"hyouki":"再会","yomi":"さいかい","memo":"関係"},{"hyouki":"絆","yomi":"きずな","memo":"関係"},{"hyouki":"繋がり","yomi":"つながり","memo":"関係"},{"hyouki":"裏切り","yomi":"うらぎり","memo":"関係"},{"hyouki":"赦し","yomi":"ゆるし","memo":"関係"},{"hyouki":"約束","yomi":"やくそく","memo":"関係"},{"hyouki":"誓い","yomi":"ちかい","memo":"関係"},{"hyouki":"嘘","yomi":"うそ","memo":"関係"},{"hyouki":"秘密","yomi":"ひみつ","memo":"関係"},{"hyouki":"本音","yomi":"ほんね","memo":"関係"},{"hyouki":"建前","yomi":"たてまえ","memo":"関係"},{"hyouki":"素顔","yomi":"すがお","memo":"関係"},{"hyouki":"白","yomi":"しろ","memo":"色"},{"hyouki":"黒","yomi":"くろ","memo":"色"},{"hyouki":"赤","yomi":"あか","memo":"色"},{"hyouki":"青","yomi":"あお","memo":"色"},{"hyouki":"金","yomi":"きん","memo":"色"},{"hyouki":"銀","yomi":"ぎん","memo":"色"},{"hyouki":"紫","yomi":"むらさき","memo":"色"},{"hyouki":"橙","yomi":"だいだい","memo":"色"},{"hyouki":"蒼","yomi":"あお","memo":"色"},{"hyouki":"茜","yomi":"あかね","memo":"色"},{"hyouki":"紅","yomi":"くれない","memo":"色"},{"hyouki":"藍","yomi":"あい","memo":"色"},{"hyouki":"翠","yomi":"みどり","memo":"色"},{"hyouki":"朱","yomi":"しゅ","memo":"色"},{"hyouki":"漆黒","yomi":"しっこく","memo":"色"},{"hyouki":"純白","yomi":"じゅんぱく","memo":"色"},{"hyouki":"薄紅","yomi":"うすべに","memo":"色"},{"hyouki":"深紅","yomi":"しんく","memo":"色"},{"hyouki":"金色","yomi":"きんいろ","memo":"色"},{"hyouki":"銀色","yomi":"ぎんいろ","memo":"色"},{"hyouki":"儚い","yomi":"はかない","memo":"詩"},{"hyouki":"切ない","yomi":"せつない","memo":"詩"},{"hyouki":"懐かしい","yomi":"なつかしい","memo":"詩"},{"hyouki":"眩しい","yomi":"まぶしい","memo":"詩"},{"hyouki":"虚しい","yomi":"むなしい","memo":"詩"},{"hyouki":"穏やか","yomi":"おだやか","memo":"詩"},{"hyouki":"柔らか","yomi":"やわらか","memo":"詩"},{"hyouki":"透明","yomi":"とうめい","memo":"詩"},{"hyouki":"永久","yomi":"とわ","memo":"詩"},{"hyouki":"無限","yomi":"むげん","memo":"詩"},{"hyouki":"彼岸","yomi":"ひがん","memo":"詩"},{"hyouki":"輪廻","yomi":"りんね","memo":"詩"},{"hyouki":"因果","yomi":"いんが","memo":"詩"},{"hyouki":"涅槃","yomi":"ねはん","memo":"詩"},{"hyouki":"慈悲","yomi":"じひ","memo":"詩"},{"hyouki":"摂理","yomi":"せつり","memo":"詩"},{"hyouki":"祝福","yomi":"しゅくふく","memo":"詩"},{"hyouki":"呪縛","yomi":"じゅばく","memo":"詩"},{"hyouki":"解脱","yomi":"げだつ","memo":"詩"},{"hyouki":"昇華","yomi":"しょうか","memo":"詩"},{"hyouki":"幻","yomi":"まぼろし","memo":"詩"},{"hyouki":"奇跡","yomi":"きせき","memo":"詩"},{"hyouki":"宿命","yomi":"しゅくめい","memo":"詩"},{"hyouki":"運命","yomi":"うんめい","memo":"詩"},{"hyouki":"使命","yomi":"しめい","memo":"詩"},{"hyouki":"天命","yomi":"てんめい","memo":"詩"},{"hyouki":"試練","yomi":"しれん","memo":"詩"},{"hyouki":"栄光","yomi":"えいこう","memo":"詩"},{"hyouki":"凱旋","yomi":"がいせん","memo":"詩"},{"hyouki":"覚醒","yomi":"かくせい","memo":"詩"},{"hyouki":"革命","yomi":"かくめい","memo":"詩"},{"hyouki":"再生","yomi":"さいせい","memo":"詩"},{"hyouki":"誕生","yomi":"たんじょう","memo":"詩"},{"hyouki":"消滅","yomi":"しょうめつ","memo":"詩"},{"hyouki":"崩壊","yomi":"ほうかい","memo":"詩"},{"hyouki":"創造","yomi":"そうぞう","memo":"詩"},{"hyouki":"破壊","yomi":"はかい","memo":"詩"},{"hyouki":"調和","yomi":"ちょうわ","memo":"詩"},{"hyouki":"矛盾","yomi":"むじゅん","memo":"詩"},{"hyouki":"逆説","yomi":"ぎゃくせつ","memo":"詩"},{"hyouki":"螺旋","yomi":"らせん","memo":"詩"},{"hyouki":"循環","yomi":"じゅんかん","memo":"詩"},{"hyouki":"振動","yomi":"しんどう","memo":"詩"},{"hyouki":"共鳴","yomi":"きょうめい","memo":"詩"},{"hyouki":"反響","yomi":"はんきょう","memo":"詩"},{"hyouki":"残滓","yomi":"ざんし","memo":"詩"},{"hyouki":"痕跡","yomi":"こんせき","memo":"詩"},{"hyouki":"轍","yomi":"わだち","memo":"詩"},{"hyouki":"蜃気楼","yomi":"しんきろう","memo":"詩"},{"hyouki":"逃げ水","yomi":"にげみず","memo":"詩"},{"hyouki":"蛍","yomi":"ほたる","memo":"詩"},{"hyouki":"蝶","yomi":"ちょう","memo":"詩"},{"hyouki":"鳥","yomi":"とり","memo":"詩"},{"hyouki":"鷹","yomi":"たか","memo":"詩"},{"hyouki":"鴉","yomi":"からす","memo":"詩"},{"hyouki":"狐","yomi":"きつね","memo":"詩"},{"hyouki":"狼","yomi":"おおかみ","memo":"詩"},{"hyouki":"龍","yomi":"りゅう","memo":"詩"},{"hyouki":"鳳凰","yomi":"ほうおう","memo":"詩"},{"hyouki":"揺らぎ","yomi":"ゆらぎ","memo":"和語"},{"hyouki":"鬩ぎ","yomi":"せめぎ","memo":"和語"},{"hyouki":"戦き","yomi":"おののき","memo":"和語"},{"hyouki":"高鳴り","yomi":"たかなり","memo":"和語"},{"hyouki":"ざわめき","yomi":"ざわめき","memo":"和語"},{"hyouki":"ほとばしり","yomi":"ほとばしり","memo":"和語"},{"hyouki":"たゆたい","yomi":"たゆたい","memo":"和語"},{"hyouki":"とめどなく","yomi":"とめどなく","memo":"和語"},{"hyouki":"かなわぬ","yomi":"かなわぬ","memo":"和語"},{"hyouki":"あわいの","yomi":"あわいの","memo":"和語"},{"hyouki":"しじまに","yomi":"しじまに","memo":"和語"},{"hyouki":"おぼろげ","yomi":"おぼろげ","memo":"和語"},{"hyouki":"ほのかに","yomi":"ほのかに","memo":"和語"},{"hyouki":"ひそかに","yomi":"ひそかに","memo":"和語"},{"hyouki":"いつしか","yomi":"いつしか","memo":"和語"},{"hyouki":"うつろう","yomi":"うつろう","memo":"和語"},{"hyouki":"たそがれ","yomi":"たそがれ","memo":"和語"},{"hyouki":"またたく","yomi":"またたく","memo":"和語"},{"hyouki":"はざまで","yomi":"はざまで","memo":"和語"},{"hyouki":"よすがに","yomi":"よすがに","memo":"和語"},{"hyouki":"ためらい","yomi":"ためらい","memo":"和語"},{"hyouki":"もどかし","yomi":"もどかし","memo":"和語"},{"hyouki":"せつなく","yomi":"せつなく","memo":"和語"},{"hyouki":"いにしえ","yomi":"いにしえ","memo":"和語"},{"hyouki":"なぎさに","yomi":"なぎさに","memo":"和語"},{"hyouki":"かがみに","yomi":"かがみに","memo":"和語"}];
 
 (function(){
 "use strict";
 
-// ── 母音 / 子音マップ ──────────────────────────────────────────────────────
+// ── マップ ──────────────────────────────────────────────────────────────
 var VOWEL_MAP={
   "あ":"a","い":"i","う":"u","え":"e","お":"o",
   "か":"a","き":"i","く":"u","け":"e","こ":"o",
@@ -460,8 +536,7 @@ var VOWEL_MAP={
   "ざ":"a","じ":"i","ず":"u","ぜ":"e","ぞ":"o",
   "だ":"a","ぢ":"i","づ":"u","で":"e","ど":"o",
   "ば":"a","び":"i","ぶ":"u","べ":"e","ぼ":"o",
-  "ぱ":"a","ぴ":"i","ぷ":"u","ぺ":"e","ぽ":"o",
-  "ゔ":"u",
+  "ぱ":"a","ぴ":"i","ぷ":"u","ぺ":"e","ぽ":"o","ゔ":"u",
   "きゃ":"a","きゅ":"u","きょ":"o",
   "しゃ":"a","しゅ":"u","しょ":"o","しぇ":"e",
   "ちゃ":"a","ちゅ":"u","ちょ":"o","ちぇ":"e",
@@ -529,7 +604,7 @@ var GYOU_OPTIONS=[
 ];
 var VOWEL_LABEL={a:"あ段",i:"い段",u:"う段",e:"え段",o:"お段"};
 
-// ── ローマ字→ひらがな ────────────────────────────────────────────────────
+// ── ローマ字 ─────────────────────────────────────────────────────────────
 var ROMAJI_MAP=[
   ["sha","しゃ"],["shi","し"],["shu","しゅ"],["she","しぇ"],["sho","しょ"],
   ["chi","ち"],["cha","ちゃ"],["chu","ちゅ"],["che","ちぇ"],["cho","ちょ"],
@@ -540,15 +615,11 @@ var ROMAJI_MAP=[
   ["mya","みゃ"],["myu","みゅ"],["myo","みょ"],
   ["rya","りゃ"],["ryu","りゅ"],["ryo","りょ"],
   ["gya","ぎゃ"],["gyu","ぎゅ"],["gyo","ぎょ"],
-  ["zya","じゃ"],["zyu","じゅ"],["zyo","じょ"],
-  ["jya","じゃ"],["jyu","じゅ"],["jyo","じょ"],
   ["ja","じゃ"],["ji","じ"],["ju","じゅ"],["je","じぇ"],["jo","じょ"],
   ["bya","びゃ"],["byu","びゅ"],["byo","びょ"],
   ["pya","ぴゃ"],["pyu","ぴゅ"],["pyo","ぴょ"],
-  ["dya","ぢゃ"],["dyu","ぢゅ"],["dyo","ぢょ"],
   ["dhi","でぃ"],["dhu","でゅ"],
-  ["fa","ふぁ"],["fi","ふぃ"],["fe","ふぇ"],["fo","ふぉ"],["fu","ふ"],
-  ["wi","うぃ"],["we","うぇ"],["wo","うぉ"],["ye","いぇ"],
+  ["fa","ふぁ"],["fi","ふぃ"],["fu","ふ"],["fe","ふぇ"],["fo","ふぉ"],
   ["va","ヴァ"],["vi","ヴィ"],["vu","ヴ"],["ve","ヴェ"],["vo","ヴォ"],
   ["ka","か"],["ki","き"],["ku","く"],["ke","け"],["ko","こ"],
   ["sa","さ"],["si","し"],["su","す"],["se","せ"],["so","そ"],
@@ -564,7 +635,7 @@ var ROMAJI_MAP=[
   ["da","だ"],["di","ぢ"],["du","づ"],["de","で"],["do","ど"],
   ["ba","ば"],["bi","び"],["bu","ぶ"],["be","べ"],["bo","ぼ"],
   ["pa","ぱ"],["pi","ぴ"],["pu","ぷ"],["pe","ぺ"],["po","ぽ"],
-  ["nn","ん"],["n'","ん"],["xtu","っ"],["ltsu","っ"],["ltu","っ"],
+  ["nn","ん"],["n'","ん"],["xtu","っ"],
   ["a","あ"],["i","い"],["u","う"],["e","え"],["o","お"],["n","ん"]
 ];
 function romajiToHira(s){
@@ -586,41 +657,38 @@ function romajiToHira(s){
 }
 function isRomaji(s){return /^[a-zA-Z']+$/.test(s);}
 
-// ── モーラ分解 ────────────────────────────────────────────────────────────
+// ── モーラ分解 ─────────────────────────────────────────────────────────
 var SMALL_KANA="ぁぃぅぇぉゃゅょゎァィゥェォャュョヮ";
 function extractSequence(text){
   var units=[],chars=Array.from(text);
   for(var i=0;i<chars.length;i++){
-    var c=chars[i];
+    var c=chars[i],next=i+1<chars.length?chars[i+1]:"";
     if(!c.trim())continue;
-    var next=i+1<chars.length?chars[i+1]:"";
     if(next&&SMALL_KANA.indexOf(next)!==-1){
       var mora=c+next;
       units.push({mora:mora,vowel:VOWEL_MAP[mora]||VOWEL_MAP[c]||null,consonant:CONSONANT_MAP[mora]||CONSONANT_MAP[c]||null});
       i++;continue;
     }
     if(c==="ー"){
-      var prev=units.length>0?units[units.length-1].vowel:null;
-      units.push({mora:"ー",vowel:prev,consonant:"-"});continue;
+      units.push({mora:"ー",vowel:units.length?units[units.length-1].vowel:null,consonant:"-"});continue;
     }
     units.push({mora:c,vowel:VOWEL_MAP[c]||null,consonant:CONSONANT_MAP[c]||null});
   }
   return units;
 }
-function detectVowel(yomi){
-  var seq=extractSequence(yomi||"");
-  return seq.length?seq[seq.length-1].vowel||null:null;
+function detectVowel(y){var s=extractSequence(y||"");return s.length?s[s.length-1].vowel||null:null;}
+function effectiveVowel(it){if(it.override)return it.override==="n"?null:it.override;return detectVowel(it.yomi);}
+function vowelPatternOf(y){return extractSequence(y).map(function(u){return u.vowel||"n";}).join("");}
+function consonantPatternOf(y){return extractSequence(y).map(function(u){return u.consonant||"-";}).join("");}
+function trailingMatchCount(seqL,item){
+  var seqI=extractSequence(item.yomi),count=0,la=seqL.length-1,li=seqI.length-1;
+  while(la>=0&&li>=0){
+    if(seqL[la].vowel!==null&&seqL[la].vowel===seqI[li].vowel){count++;la--;li--;}else break;
+  }
+  return count;
 }
-function effectiveVowel(item){
-  if(item.override)return item.override==="n"?null:item.override;
-  return detectVowel(item.yomi);
-}
-function vowelPatternOf(yomi){return extractSequence(yomi).map(function(u){return u.vowel||"n";}).join("");}
-function consonantPatternOf(yomi){return extractSequence(yomi).map(function(u){return u.consonant||"-";}).join("");}
-function normalizeVowelQuery(s){return(s||"").toLowerCase().replace(/[^aiueon]/g,"");}
-function normalizeConsonantQuery(s){return(s||"").toLowerCase().replace(/[^ksthnmyrwgzdbpvq\-]/g,"");}
 
-// ── DB ──────────────────────────────────────────────────────────────────
+// ── DB ────────────────────────────────────────────────────────────────
 var DB=[],nextId=1;
 function normalizeItem(it){
   if(!Array.isArray(it.tags))it.tags=it.tags?String(it.tags).split(",").map(function(t){return t.trim();}).filter(Boolean):[];
@@ -630,16 +698,16 @@ function normalizeItem(it){
 }
 function parseTags(s){return(s||"").split(",").map(function(t){return t.trim();}).filter(Boolean);}
 function allUniqueTags(){
-  var set={};
-  DB.forEach(function(it){(it.tags||[]).forEach(function(t){set[t]=true;});});
-  return Object.keys(set).sort();
+  var set={};DB.forEach(function(it){(it.tags||[]).forEach(function(t){set[t]=true;});});return Object.keys(set).sort();
 }
 
-// ── 状態 ────────────────────────────────────────────────────────────────
+// ── 状態 ─────────────────────────────────────────────────────────────
 var activeVowels={},filterFav=false,filterUsed=false,activeTags={};
-var sortKey="id",sortDir="asc",PAGE_SIZE=50,currentPage=0;
+var sortKey="id",sortDir="asc",PAGE_SIZE=50,listPage=0;
+var searchMode="vowel",searchPage=0,SEARCH_PAGE=30;
+var lastSearchQuery="";
 
-// ── テーマ ──────────────────────────────────────────────────────────────
+// ── テーマ ────────────────────────────────────────────────────────────
 var DARK_THEMES=[
   {name:"blue",  bg:"#0d0f17",panel:"#15192a",panel2:"#1c2135",line:"#283050",accent:"#7aa2f7",accent2:"#bb9af7"},
   {name:"purple",bg:"#120f1c",panel:"#1e1830",panel2:"#261e3e",line:"#382b56",accent:"#bb9af7",accent2:"#9aa5f0"},
@@ -663,139 +731,306 @@ function applyTheme(){
   s.setProperty("--panel2",t.panel2);s.setProperty("--line",t.line);
   s.setProperty("--accent",t.accent);s.setProperty("--accent2",t.accent2);
   s.setProperty("--text",tx.text);s.setProperty("--sub",tx.sub);
-  // テーマ色を theme-color メタに反映（ブラウザUI）
-  var meta=document.querySelector('meta[name="theme-color"]');
-  if(meta)meta.setAttribute("content",t.bg);
+  var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute("content",t.bg);
 }
 function renderSwatches(){
   var el=document.getElementById("accent-swatches");el.innerHTML="";
   (isLightMode?LIGHT_THEMES:DARK_THEMES).forEach(function(t,idx){
     var dot=document.createElement("button");dot.type="button";
     dot.className="swatch-dot"+(idx===themeIndex?" active":"");
-    dot.style.background="linear-gradient(135deg,"+t.bg+" 50%,"+t.accent+" 50%)";
-    dot.title=t.name;
+    dot.style.background="linear-gradient(135deg,"+t.bg+" 50%,"+t.accent+" 50%)";dot.title=t.name;
     dot.addEventListener("click",function(){themeIndex=idx;applyTheme();renderSwatches();});
     el.appendChild(dot);
   });
 }
 document.getElementById("btn-theme-toggle").addEventListener("click",function(){
-  isLightMode=!isLightMode;themeIndex=0;
-  this.textContent=isLightMode?"☀️ ライト":"🌙 ダーク";
-  applyTheme();renderSwatches();
+  isLightMode=!isLightMode;themeIndex=0;this.textContent=isLightMode?"☀️":"🌙";applyTheme();renderSwatches();
 });
 applyTheme();renderSwatches();
 
-// ── タブ ────────────────────────────────────────────────────────────────
+// ── タブ ──────────────────────────────────────────────────────────────
 var navBtns=document.querySelectorAll("nav button");
 navBtns.forEach(function(btn){
   btn.addEventListener("click",function(){
     navBtns.forEach(function(b){b.classList.remove("active");});btn.classList.add("active");
     document.querySelectorAll(".tabpanel").forEach(function(p){p.style.display="none";});
-    document.getElementById("tab-"+btn.dataset.tab).style.display="block";
-    if(btn.dataset.tab==="list")renderList();
+    var tab=btn.dataset.tab;
+    document.getElementById("tab-"+tab).style.display="block";
+    if(tab==="search"){setTimeout(function(){document.getElementById("main-search").focus();},50);}
+    if(tab==="list")renderList();
   });
 });
 
-// ── ローマ字自動変換 ─────────────────────────────────────────────────────
-var inYomi=document.getElementById("in-yomi");
-var previewHira=document.getElementById("preview-hira");
-inYomi.addEventListener("input",function(){
-  previewHira.textContent=isRomaji(this.value)?"→ "+romajiToHira(this.value):"";
-  updatePreview();
-});
-inYomi.addEventListener("blur",function(){
-  if(isRomaji(this.value)){this.value=romajiToHira(this.value);previewHira.textContent="";}
-  updatePreview();
-});
-
-// ── 登録 ────────────────────────────────────────────────────────────────
-function updatePreview(){
-  var yomi=inYomi.value.trim(),actual=isRomaji(yomi)?romajiToHira(yomi):yomi;
-  var v=detectVowel(actual);
-  document.getElementById("preview-vowel").innerHTML=v?vowelChip(v)+" "+VOWEL_LABEL[v]:"判定不可";
+// ── ユーティリティ ────────────────────────────────────────────────────
+function vowelChip(v){return'<span class="vowel-chip '+(v?"v-"+v:"v-n")+'">'+(v?v:"n")+'</span>';}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});
 }
-document.getElementById("btn-add").addEventListener("click",function(){
-  var rawYomi=inYomi.value.trim();
-  var yomi=isRomaji(rawYomi)?romajiToHira(rawYomi):rawYomi;
-  var st=document.getElementById("register-status");
-  if(!yomi){st.textContent="読みを入力すること。";st.className="status err";return;}
-  var hyouki=document.getElementById("in-hyouki").value.trim()||yomi;
-  if(DB.some(function(it){return it.hyouki===hyouki&&it.yomi===yomi;})){
-    st.textContent="既に登録済み：「"+hyouki+"」（"+yomi+"）。";st.className="status err";return;
-  }
-  var item=normalizeItem({
-    id:nextId++,hyouki:hyouki,yomi:yomi,
-    override:document.getElementById("in-vowel-override").value||null,
-    memo:document.getElementById("in-memo").value.trim(),
-    tags:parseTags(document.getElementById("in-tags").value),
-    fav:false,used:false
+function tagChipsHtml(tags){
+  return(tags||[]).map(function(t){return'<span class="tag-chip-plain">'+escapeHtml(t)+'</span>';}).join("");
+}
+function copyText(txt,btn){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){
+      btn.textContent="✅";btn.classList.add("copied");
+      setTimeout(function(){btn.textContent="📋";btn.classList.remove("copied");},1400);
+    }).catch(function(){fallbackCopy(txt,btn);});
+  }else fallbackCopy(txt,btn);
+}
+function fallbackCopy(txt,btn){
+  var el=document.createElement("textarea");el.value=txt;el.style.cssText="position:fixed;opacity:0;";
+  document.body.appendChild(el);el.select();
+  try{document.execCommand("copy");btn.textContent="✅";btn.classList.add("copied");
+    setTimeout(function(){btn.textContent="📋";btn.classList.remove("copied");},1400);}catch(e){}
+  document.body.removeChild(el);
+}
+
+// ── 検索 ── メイン ────────────────────────────────────────────────────
+var mainSearch=document.getElementById("main-search");
+var searchClear=document.getElementById("btn-search-clear");
+var searchHint=document.getElementById("search-hint");
+var searchInitMsg=document.getElementById("search-initial-msg");
+var searchResultsDiv=document.getElementById("search-results");
+var resultCards=document.getElementById("result-cards");
+var resultsCount=document.getElementById("results-count");
+var lyricPanel=document.getElementById("lyric-panel");
+
+var HINTS={
+  vowel:'母音パターン例: <code>aiai</code>（さいわい系）　<code>ua</code>（夢・空）　<code>oio</code>（恋心）　<code>aiueo</code>',
+  consonant:'子音パターン例: <code>skr</code>（さくら）　<code>hn</code>（花系）　あ行は<code>-</code>、んは<code>n</code>、っは<code>q</code>',
+  lyric:'歌詞（ひらがな）を入力 → モーラ解析 + 末尾母音が一致する語を表示',
+  keyword:'表記・読み・メモ・タグで絞り込む。ひらがな・漢字・カタカナ混在可'
+};
+
+// モード切替
+Array.prototype.forEach.call(document.querySelectorAll(".mode-btn"),function(btn){
+  btn.addEventListener("click",function(){
+    Array.prototype.forEach.call(document.querySelectorAll(".mode-btn"),function(b){b.classList.remove("active");});
+    btn.classList.add("active");
+    searchMode=btn.dataset.mode;
+    searchHint.innerHTML=HINTS[searchMode];
+    mainSearch.placeholder=searchMode==="vowel"?"母音パターン (aiai)":
+                           searchMode==="consonant"?"子音パターン (skr)":
+                           searchMode==="lyric"?"歌詞（ひらがな）例: そらをみあげて":
+                           "キーワード（表記・読み・タグ）";
+    searchPage=0;doSearch();
+    mainSearch.focus();
   });
-  DB.push(item);
-  document.getElementById("in-hyouki").value="";inYomi.value="";
-  document.getElementById("in-vowel-override").value="";
-  document.getElementById("in-memo").value="";document.getElementById("in-tags").value="";
-  previewHira.textContent="";updatePreview();
-  st.textContent="登録した：「"+item.hyouki+"」（"+item.yomi+"）";st.className="status ok";
-  onDBChange();
 });
 
-// ── フィルタ ────────────────────────────────────────────────────────────
+var searchTimer=null;
+mainSearch.addEventListener("input",function(){
+  var val=this.value;
+  searchClear.classList.toggle("visible",val.length>0);
+  if(searchTimer)clearTimeout(searchTimer);
+  searchTimer=setTimeout(function(){searchPage=0;doSearch();},180);
+});
+mainSearch.addEventListener("keydown",function(e){if(e.key==="Enter"){if(searchTimer)clearTimeout(searchTimer);searchPage=0;doSearch();}});
+searchClear.addEventListener("click",function(){
+  mainSearch.value="";searchClear.classList.remove("visible");
+  searchPage=0;doSearch();mainSearch.focus();
+});
+
+function doSearch(){
+  var raw=mainSearch.value.trim();
+  lastSearchQuery=raw;
+  if(!raw){
+    searchInitMsg.style.display="";searchResultsDiv.style.display="none";
+    lyricPanel.style.display="none";return;
+  }
+  searchInitMsg.style.display="none";searchResultsDiv.style.display="";
+
+  var results=[];
+  if(searchMode==="vowel"){
+    var q=raw.toLowerCase().replace(/[^aiueon]/g,"");
+    results=DB.filter(function(it){return vowelPatternOf(it.yomi)===q;});
+    // 完全一致なければ末尾一致でソート
+    if(!results.length){
+      results=DB.filter(function(it){
+        var p=vowelPatternOf(it.yomi);return p.length>=q.length&&p.slice(-q.length)===q;
+      }).sort(function(a,b){
+        var pa=vowelPatternOf(a.yomi),pb=vowelPatternOf(b.yomi);
+        return pa.length-pb.length;
+      });
+    }
+    renderSearchResults(results,null);
+    lyricPanel.style.display="none";
+  }else if(searchMode==="consonant"){
+    var qc=raw.toLowerCase().replace(/[^ksthnmyrwgzdbpvq\-]/g,"");
+    results=DB.filter(function(it){return consonantPatternOf(it.yomi)===qc;});
+    renderSearchResults(results,null);
+    lyricPanel.style.display="none";
+  }else if(searchMode==="lyric"){
+    var seq=extractSequence(raw);
+    // 歌詞解析表示
+    lyricPanel.style.display="block";
+    var seqEl=document.getElementById("rhyme-seq");seqEl.innerHTML="";
+    seq.forEach(function(u){
+      var div=document.createElement("div");div.className="unit";
+      div.innerHTML="<div class='mora'>"+escapeHtml(u.mora)+"</div>"+vowelChip(u.vowel);seqEl.appendChild(div);
+    });
+    document.getElementById("rhyme-pattern").textContent=seq.map(function(u){return u.vowel||"n";}).join(" ")||"―";
+    if(!seq.length){renderSearchResults([],null);return;}
+    var lastV=seq[seq.length-1].vowel;
+    results=DB.filter(function(it){return effectiveVowel(it)===lastV;});
+    var scored=results.map(function(it){return{it:it,mc:trailingMatchCount(seq,it)};});
+    scored.sort(function(a,b){return b.mc-a.mc;});
+    renderSearchResults(scored.map(function(s){return s.it;}),scored);
+  }else{
+    // keyword
+    var qk=raw.toLowerCase();
+    results=DB.filter(function(it){
+      return(it.hyouki+" "+it.yomi+" "+it.memo+" "+(it.tags||[]).join(" ")).toLowerCase().indexOf(qk)!==-1;
+    });
+    renderSearchResults(results,null);
+    lyricPanel.style.display="none";
+  }
+}
+
+function renderSearchResults(results,scored){
+  var total=results.length;
+  var start=searchPage*SEARCH_PAGE,end=Math.min(start+SEARCH_PAGE,total);
+  var page=results.slice(start,end);
+  resultsCount.textContent=total+"件";
+  resultCards.innerHTML="";
+  if(!page.length){
+    resultCards.innerHTML='<div class="empty">一致する語がない。<br><span style="font-size:.72rem;">シードデータを読み込むと候補が増える（データタブ）</span></div>';
+  }
+  page.forEach(function(item,i){
+    var globalIdx=start+i;
+    var mc=scored?scored[globalIdx]?scored[globalIdx].mc:0:null;
+    var v=effectiveVowel(item);
+    var card=document.createElement("div");card.className="result-card";
+    var matchBadge=mc!=null?'<span class="rc-match-count">末尾'+mc+'モーラ一致</span>':'';
+    card.innerHTML=
+      '<div class="rc-hyouki">'+escapeHtml(item.hyouki)+'</div>'+
+      '<div class="rc-yomi">'+escapeHtml(item.yomi)+'</div>'+
+      '<div class="rc-vowel">'+vowelChip(v)+'</div>'+
+      '<div class="rc-pattern">'+escapeHtml(vowelPatternOf(item.yomi))+'</div>'+
+      (matchBadge?'<div>'+matchBadge+'</div>':'')+
+      '<div class="rc-tag">'+tagChipsHtml(item.tags)+'</div>'+
+      '<div class="rc-actions">'+
+        '<button class="copy-btn" data-copy="'+item.id+'">📋</button>'+
+        '<button class="small'+(item.fav?" fav-on":"")+'\" data-rfav="'+item.id+'">⭐</button>'+
+      '</div>';
+    resultCards.appendChild(card);
+  });
+  // pager
+  var pager=document.getElementById("search-pager");pager.innerHTML="";
+  var totalP=Math.max(1,Math.ceil(total/SEARCH_PAGE));
+  if(totalP>1){
+    var prev=document.createElement("button");prev.className="small";prev.textContent="◀";prev.disabled=searchPage===0;
+    prev.addEventListener("click",function(){searchPage--;doSearch();});pager.appendChild(prev);
+    var info=document.createElement("span");info.textContent=(searchPage+1)+" / "+totalP;pager.appendChild(info);
+    var next=document.createElement("button");next.className="small";next.textContent="▶";next.disabled=searchPage>=totalP-1;
+    next.addEventListener("click",function(){searchPage++;doSearch();});pager.appendChild(next);
+  }
+  // events
+  Array.prototype.forEach.call(resultCards.querySelectorAll(".copy-btn"),function(btn){
+    btn.addEventListener("click",function(){
+      var id=parseInt(btn.dataset.copy,10);
+      var item=DB.find(function(it){return it.id===id;});if(item)copyText(item.hyouki,btn);
+    });
+  });
+  Array.prototype.forEach.call(resultCards.querySelectorAll("button[data-rfav]"),function(btn){
+    btn.addEventListener("click",function(){
+      var id=parseInt(btn.dataset.rfav,10);
+      var item=DB.find(function(it){return it.id===id;});
+      if(item){item.fav=!item.fav;onDBChange();doSearch();}
+    });
+  });
+}
+
+// ── 2行比較 ────────────────────────────────────────────────────────────
+document.getElementById("btn-open-compare").addEventListener("click",function(){
+  document.getElementById("compare-panel").style.display="block";
+  document.getElementById("cmp-a").focus();
+});
+document.getElementById("btn-compare-close").addEventListener("click",function(){
+  document.getElementById("compare-panel").style.display="none";
+});
+document.getElementById("btn-compare").addEventListener("click",function(){
+  var seqA=extractSequence(document.getElementById("cmp-a").value);
+  var seqB=extractSequence(document.getElementById("cmp-b").value);
+  var el=document.getElementById("cmp-result");
+  if(!seqA.length&&!seqB.length){el.innerHTML="<div class='empty'>両方入力すること。</div>";return;}
+  var maxLen=Math.max(seqA.length,seqB.length);
+  var padA=maxLen-seqA.length,padB=maxLen-seqB.length;
+  var grid=document.createElement("div");grid.className="cmp-grid";
+  for(var i=0;i<maxLen;i++){
+    var uA=i>=padA?seqA[i-padA]:null,uB=i>=padB?seqB[i-padB]:null;
+    var col=document.createElement("div");col.className="cmp-col";
+    function mk(u,ov){
+      var d=document.createElement("div");
+      if(!u){d.className="cmp-mora cmp-empty";d.textContent="·";return d;}
+      d.className="cmp-mora"+(u.vowel!==null&&u.vowel===ov?" cmp-match":u.vowel===null?" cmp-null":" cmp-miss");
+      d.textContent=u.mora;return d;
+    }
+    col.appendChild(mk(uA,uB?uB.vowel:null));
+    var sep=document.createElement("div");sep.style.cssText="height:2px;border-top:1px dotted var(--line);";col.appendChild(sep);
+    col.appendChild(mk(uB,uA?uA.vowel:null));
+    grid.appendChild(col);
+  }
+  el.innerHTML="";el.appendChild(grid);
+  var mc=0;
+  for(var j=0;j<seqA.length&&j<seqB.length;j++){
+    var ai=seqA[seqA.length-1-j],bi=seqB[seqB.length-1-j];
+    if(ai.vowel!==null&&ai.vowel===bi.vowel)mc++;else break;
+  }
+  var sc=document.createElement("div");sc.style.cssText="margin-top:5px;font-size:.74rem;color:var(--sub);";
+  sc.textContent="末尾 "+mc+" モーラ一致";el.appendChild(sc);
+});
+
+// ── 図鑑 ──────────────────────────────────────────────────────────────
 var vowelFilterbar=document.getElementById("vowel-filterbar");
 ["a","i","u","e","o","n"].forEach(function(v){
   var b=document.createElement("button");b.textContent=v==="n"?"なし":v;
   b.style.cssText="background:var(--panel2);color:var(--text);border:1px solid var(--line);";
   b.addEventListener("click",function(){
     if(activeVowels[v])delete activeVowels[v];else activeVowels[v]=true;
-    b.classList.toggle("active",!!activeVowels[v]);currentPage=0;renderList();
+    b.classList.toggle("active",!!activeVowels[v]);listPage=0;renderList();
   });
   vowelFilterbar.appendChild(b);
 });
 document.getElementById("btn-fav-filter").addEventListener("click",function(){
-  filterFav=!filterFav;this.classList.toggle("active",filterFav);currentPage=0;renderList();
+  filterFav=!filterFav;this.classList.toggle("active",filterFav);listPage=0;renderList();
 });
 document.getElementById("btn-used-filter").addEventListener("click",function(){
-  filterUsed=!filterUsed;this.classList.toggle("active",filterUsed);currentPage=0;renderList();
+  filterUsed=!filterUsed;this.classList.toggle("active",filterUsed);listPage=0;renderList();
 });
 document.getElementById("btn-clear-filters").addEventListener("click",function(){
   activeVowels={};filterFav=false;filterUsed=false;activeTags={};
   Array.prototype.forEach.call(document.querySelectorAll("#vowel-filterbar button"),function(b){b.classList.remove("active");});
   document.getElementById("btn-fav-filter").classList.remove("active");
   document.getElementById("btn-used-filter").classList.remove("active");
-  currentPage=0;renderTagFilterbar();renderList();
+  listPage=0;renderTagFilterbar();renderList();
 });
 function renderTagFilterbar(){
   var bar=document.getElementById("tag-filterbar");bar.innerHTML="";
   allUniqueTags().forEach(function(tag){
-    var chip=document.createElement("button");
-    chip.className="tag-chip"+(activeTags[tag]?" active":"");chip.textContent=tag;
+    var chip=document.createElement("button");chip.className="tag-chip"+(activeTags[tag]?" active":"");chip.textContent=tag;
     chip.addEventListener("click",function(){
       if(activeTags[tag])delete activeTags[tag];else activeTags[tag]=true;
-      chip.classList.toggle("active",!!activeTags[tag]);currentPage=0;renderList();
+      chip.classList.toggle("active",!!activeTags[tag]);listPage=0;renderList();
     });
     bar.appendChild(chip);
   });
 }
 var gyouFilter=document.getElementById("gyou-filter");
-GYOU_OPTIONS.forEach(function(g){
-  var opt=document.createElement("option");opt.value=g.code;opt.textContent=g.label;
-  gyouFilter.appendChild(opt);
-});
-gyouFilter.addEventListener("change",function(){currentPage=0;renderList();});
-document.getElementById("search-box").addEventListener("input",function(){currentPage=0;renderList();});
+GYOU_OPTIONS.forEach(function(g){var opt=document.createElement("option");opt.value=g.code;opt.textContent=g.label;gyouFilter.appendChild(opt);});
+gyouFilter.addEventListener("change",function(){listPage=0;renderList();});
+document.getElementById("search-box").addEventListener("input",function(){listPage=0;renderList();});
 document.getElementById("sort-select").addEventListener("change",function(){
-  var p=this.value.split("-");sortKey=p[0];sortDir=p[1];currentPage=0;renderList();
+  var p=this.value.split("-");sortKey=p[0];sortDir=p[1];listPage=0;renderList();
 });
-
-// ── フィルタ＋ソート ──────────────────────────────────────────────────
-function getFilteredSorted(){
+function getFiltered(){
   var q=document.getElementById("search-box").value.trim().toLowerCase();
   var gyou=gyouFilter.value;
   var hasVF=Object.keys(activeVowels).length>0,hasTagF=Object.keys(activeTags).length>0;
   var arr=DB.filter(function(item){
     var v=effectiveVowel(item);
     if(hasVF){var vk=v===null?"n":v;if(!activeVowels[vk])return false;}
-    if(filterFav&&!item.fav)return false;
-    if(filterUsed&&!item.used)return false;
+    if(filterFav&&!item.fav)return false;if(filterUsed&&!item.used)return false;
     if(gyou&&consonantPatternOf(item.yomi).indexOf(gyou)===-1)return false;
     if(hasTagF){var m=false;(item.tags||[]).forEach(function(t){if(activeTags[t])m=true;});if(!m)return false;}
     if(q){var h=(item.hyouki+" "+item.yomi+" "+item.memo+" "+(item.tags||[]).join(" ")).toLowerCase();if(h.indexOf(q)===-1)return false;}
@@ -803,66 +1038,42 @@ function getFilteredSorted(){
   });
   arr.sort(function(a,b){
     var va,vb;
-    if(sortKey==="id"){va=a.id;vb=b.id;}
-    else if(sortKey==="hyouki"){va=a.hyouki;vb=b.hyouki;}
-    else if(sortKey==="yomi"){va=a.yomi;vb=b.yomi;}
-    else if(sortKey==="vowel"){va=effectiveVowel(a)||"z";vb=effectiveVowel(b)||"z";}
+    if(sortKey==="id"){va=a.id;vb=b.id;}else if(sortKey==="hyouki"){va=a.hyouki;vb=b.hyouki;}
+    else if(sortKey==="yomi"){va=a.yomi;vb=b.yomi;}else if(sortKey==="vowel"){va=effectiveVowel(a)||"z";vb=effectiveVowel(b)||"z";}
     else{va=a.id;vb=b.id;}
     return va<vb?(sortDir==="asc"?-1:1):va>vb?(sortDir==="asc"?1:-1):0;
   });
   return arr;
 }
-
-// ── ユーティリティ ────────────────────────────────────────────────────
-function vowelChip(v){return '<span class="vowel-chip '+(v?"v-"+v:"v-n")+'">'+(v?v:"n")+'</span>';}
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});
-}
-function tagChipsHtml(tags){
-  return(tags||[]).map(function(t){return'<span class="tag-chip-plain">'+escapeHtml(t)+'</span>';}).join("");
-}
 function vowelOverrideOptionsHtml(sel){
-  return[["","自動判定"],["a","a（あ）"],["i","i（い）"],["u","u（う）"],["e","e（え）"],["o","o（お）"],["n","なし"]]
+  return[["","自動判定"],["a","a"],["i","i"],["u","u"],["e","e"],["o","o"],["n","なし"]]
     .map(function(o){return"<option value='"+o[0]+"'"+(o[0]===(sel||"")?" selected":"")+">"+o[1]+"</option>";}).join("");
 }
-function fallbackCopy(btn,txt){
-  var el=document.createElement("textarea");el.value=txt;el.style.cssText="position:fixed;opacity:0;";
-  document.body.appendChild(el);el.select();
-  try{document.execCommand("copy");btn.textContent="✅";setTimeout(function(){btn.textContent="📋";},1200);}catch(e){}
-  document.body.removeChild(el);
-}
-
-// ── renderList ────────────────────────────────────────────────────────
 var editingId=null;
 function renderList(){
   renderTagFilterbar();
-  var filtered=getFilteredSorted();
-  var totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
-  if(currentPage>=totalPages)currentPage=totalPages-1;
-  var page=filtered.slice(currentPage*PAGE_SIZE,(currentPage+1)*PAGE_SIZE);
+  var filtered=getFiltered(),totalP=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
+  if(listPage>=totalP)listPage=totalP-1;
+  var page=filtered.slice(listPage*PAGE_SIZE,(listPage+1)*PAGE_SIZE);
   var body=document.getElementById("list-body");body.innerHTML="";
   page.forEach(function(item){
     var v=effectiveVowel(item),tr=document.createElement("tr");
     if(item.id===editingId){
-      tr.innerHTML=
-        "<td><input type='text' class='edit-hyouki' value='"+escapeHtml(item.hyouki)+"' style='width:74px;'></td>"+
-        "<td><input type='text' class='edit-yomi' value='"+escapeHtml(item.yomi)+"' style='width:74px;'></td>"+
+      tr.innerHTML="<td><input type='text' class='edit-hyouki' value='"+escapeHtml(item.hyouki)+"' style='width:70px;'></td>"+
+        "<td><input type='text' class='edit-yomi' value='"+escapeHtml(item.yomi)+"' style='width:70px;'></td>"+
         "<td><select class='edit-override'>"+vowelOverrideOptionsHtml(item.override)+"</select></td>"+
         "<td>―</td><td>―</td>"+
-        "<td><input type='text' class='edit-memo' value='"+escapeHtml(item.memo||"")+"' style='width:74px;'> "+
-          "<input type='text' class='edit-tags' value='"+escapeHtml((item.tags||[]).join(","))+"' placeholder='タグ' style='width:74px;'></td>"+
+        "<td><input type='text' class='edit-memo' value='"+escapeHtml(item.memo||"")+"' style='width:70px;'> "+
+          "<input type='text' class='edit-tags' value='"+escapeHtml((item.tags||[]).join(","))+"' placeholder='タグ' style='width:70px;'></td>"+
         "<td>―</td>"+
-        "<td style='white-space:nowrap;'>"+
-          "<button class='small' data-save='"+item.id+"'>保存</button> "+
+        "<td style='white-space:nowrap;'><button class='small' data-save='"+item.id+"'>保存</button> "+
           "<button class='small' data-cancel='1'>ｷｬﾝｾﾙ</button></td>";
     }else{
-      tr.innerHTML=
-        "<td>"+escapeHtml(item.hyouki)+"</td>"+
-        "<td>"+escapeHtml(item.yomi)+"</td>"+
+      tr.innerHTML="<td>"+escapeHtml(item.hyouki)+"</td><td>"+escapeHtml(item.yomi)+"</td>"+
         "<td>"+vowelChip(v)+"</td>"+
-        "<td style='font-family:monospace;color:var(--accent2);'>"+escapeHtml(vowelPatternOf(item.yomi))+"</td>"+
-        "<td style='font-family:monospace;color:var(--accent2);'>"+escapeHtml(consonantPatternOf(item.yomi))+"</td>"+
-        "<td>"+tagChipsHtml(item.tags)+(item.memo?"<span style='color:var(--sub);font-size:.68rem;'> "+escapeHtml(item.memo)+"</span>":"")+"</td>"+
+        "<td style='font-family:monospace;color:var(--accent2);font-size:.75rem;'>"+escapeHtml(vowelPatternOf(item.yomi))+"</td>"+
+        "<td style='font-family:monospace;color:var(--accent2);font-size:.75rem;'>"+escapeHtml(consonantPatternOf(item.yomi))+"</td>"+
+        "<td>"+tagChipsHtml(item.tags)+(item.memo?"<span style='color:var(--sub);font-size:.67rem;'> "+escapeHtml(item.memo)+"</span>":"")+"</td>"+
         "<td style='white-space:nowrap;'>"+
           "<button class='small"+(item.fav?" fav-on":"")+"' data-fav='"+item.id+"'>⭐</button> "+
           "<button class='small"+(item.used?" used-on":"")+"' data-used='"+item.id+"'>✓</button></td>"+
@@ -875,159 +1086,79 @@ function renderList(){
   });
   document.getElementById("list-count").textContent=filtered.length+"件";
   document.getElementById("list-empty").style.display=page.length===0?"block":"none";
-  // pager
-  var pager=document.getElementById("pager");pager.innerHTML="";
+  var pager=document.getElementById("list-pager");pager.innerHTML="";
+  var totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   if(totalPages>1){
-    var prev=document.createElement("button");prev.className="small";prev.textContent="◀";prev.disabled=currentPage===0;
-    prev.addEventListener("click",function(){currentPage--;renderList();});pager.appendChild(prev);
-    var info=document.createElement("span");
-    info.textContent=(currentPage+1)+" / "+totalPages+"ページ （"+filtered.length+"件）";pager.appendChild(info);
-    var next=document.createElement("button");next.className="small";next.textContent="▶";next.disabled=currentPage>=totalPages-1;
-    next.addEventListener("click",function(){currentPage++;renderList();});pager.appendChild(next);
+    var prev=document.createElement("button");prev.className="small";prev.textContent="◀";prev.disabled=listPage===0;
+    prev.addEventListener("click",function(){listPage--;renderList();});pager.appendChild(prev);
+    var info=document.createElement("span");info.textContent=(listPage+1)+" / "+totalPages+" ("+filtered.length+"件)";pager.appendChild(info);
+    var next=document.createElement("button");next.className="small";next.textContent="▶";next.disabled=listPage>=totalPages-1;
+    next.addEventListener("click",function(){listPage++;renderList();});pager.appendChild(next);
   }
-  // events
-  function on(sel,attr,fn){Array.prototype.forEach.call(body.querySelectorAll(sel),fn);}
-  on("button[data-del]","",function(btn){
-    btn.addEventListener("click",function(){
-      var id=parseInt(btn.dataset.del,10);DB=DB.filter(function(it){return it.id!==id;});
-      if(editingId===id)editingId=null;onDBChange();renderList();
-    });
-  });
-  on("button[data-edit]","",function(btn){btn.addEventListener("click",function(){editingId=parseInt(btn.dataset.edit,10);renderList();});});
-  on("button[data-cancel]","",function(btn){btn.addEventListener("click",function(){editingId=null;renderList();});});
-  on("button[data-save]","",function(btn){
-    btn.addEventListener("click",function(){
-      var id=parseInt(btn.dataset.save,10),tr=btn.closest("tr");
-      var item=DB.find(function(it){return it.id===id;});if(!item)return;
-      var newYomi=tr.querySelector(".edit-yomi").value.trim()||item.yomi;
-      var newHyouki=tr.querySelector(".edit-hyouki").value.trim()||newYomi;
-      if(DB.some(function(it){return it.id!==id&&it.hyouki===newHyouki&&it.yomi===newYomi;})){alert("既に登録済み。");return;}
-      item.hyouki=newHyouki;item.yomi=newYomi;item.override=tr.querySelector(".edit-override").value||null;
-      item.memo=tr.querySelector(".edit-memo").value.trim();item.tags=parseTags(tr.querySelector(".edit-tags").value);
-      editingId=null;onDBChange();renderList();
-    });
-  });
-  on("button[data-fav]","",function(btn){
-    btn.addEventListener("click",function(){
-      var item=DB.find(function(it){return it.id===parseInt(btn.dataset.fav,10);});
-      if(item){item.fav=!item.fav;onDBChange();renderList();}
-    });
-  });
-  on("button[data-used]","",function(btn){
-    btn.addEventListener("click",function(){
-      var item=DB.find(function(it){return it.id===parseInt(btn.dataset.used,10);});
-      if(item){item.used=!item.used;onDBChange();renderList();}
-    });
-  });
-  on("button[data-copy]","",function(btn){
-    btn.addEventListener("click",function(){
-      var item=DB.find(function(it){return it.id===parseInt(btn.dataset.copy,10);});
-      if(!item)return;
-      if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(item.hyouki).then(function(){
-          btn.textContent="✅";setTimeout(function(){btn.textContent="📋";},1200);
-        }).catch(function(){fallbackCopy(btn,item.hyouki);});
-      }else fallbackCopy(btn,item.hyouki);
-    });
-  });
+  function ev(sel,fn){Array.prototype.forEach.call(body.querySelectorAll(sel),fn);}
+  ev("button[data-del]",function(btn){btn.addEventListener("click",function(){
+    var id=parseInt(btn.dataset.del,10);DB=DB.filter(function(it){return it.id!==id;});
+    if(editingId===id)editingId=null;onDBChange();renderList();
+  });});
+  ev("button[data-edit]",function(btn){btn.addEventListener("click",function(){editingId=parseInt(btn.dataset.edit,10);renderList();});});
+  ev("button[data-cancel]",function(btn){btn.addEventListener("click",function(){editingId=null;renderList();});});
+  ev("button[data-save]",function(btn){btn.addEventListener("click",function(){
+    var id=parseInt(btn.dataset.save,10),tr=btn.closest("tr");
+    var item=DB.find(function(it){return it.id===id;});if(!item)return;
+    var ny=tr.querySelector(".edit-yomi").value.trim()||item.yomi;
+    var nh=tr.querySelector(".edit-hyouki").value.trim()||ny;
+    if(DB.some(function(it){return it.id!==id&&it.hyouki===nh&&it.yomi===ny;})){alert("既に登録済み。");return;}
+    item.hyouki=nh;item.yomi=ny;item.override=tr.querySelector(".edit-override").value||null;
+    item.memo=tr.querySelector(".edit-memo").value.trim();item.tags=parseTags(tr.querySelector(".edit-tags").value);
+    editingId=null;onDBChange();renderList();
+  });});
+  ev("button[data-fav]",function(btn){btn.addEventListener("click",function(){
+    var item=DB.find(function(it){return it.id===parseInt(btn.dataset.fav,10);});
+    if(item){item.fav=!item.fav;onDBChange();renderList();}
+  });});
+  ev("button[data-used]",function(btn){btn.addEventListener("click",function(){
+    var item=DB.find(function(it){return it.id===parseInt(btn.dataset.used,10);});
+    if(item){item.used=!item.used;onDBChange();renderList();}
+  });});
+  ev("button[data-copy]",function(btn){btn.addEventListener("click",function(){
+    var item=DB.find(function(it){return it.id===parseInt(btn.dataset.copy,10);});if(item)copyText(item.hyouki,btn);
+  });});
 }
 
-// ── 押韻検索 ─────────────────────────────────────────────────────────
-document.getElementById("btn-pattern-search").addEventListener("click",function(){
-  var q=normalizeVowelQuery(document.getElementById("pattern-input").value);
-  var el=document.getElementById("pattern-results");
-  if(!q){el.textContent="パターンを入力すること。";el.className="empty";return;}
-  var matches=DB.filter(function(it){return vowelPatternOf(it.yomi)===q;});
-  if(!matches.length){el.textContent="一致なし。";el.className="empty";return;}
-  el.className="";
-  el.innerHTML="<table><thead><tr><th>表記</th><th>読み</th><th>末尾母音</th><th>母音P</th></tr></thead><tbody>"+
-    matches.map(function(it){
-      return "<tr><td>"+escapeHtml(it.hyouki)+"</td><td>"+escapeHtml(it.yomi)+"</td>"+
-        "<td>"+vowelChip(effectiveVowel(it))+"</td>"+
-        "<td style='font-family:monospace;color:var(--accent2);'>"+escapeHtml(vowelPatternOf(it.yomi))+"</td></tr>";
-    }).join("")+"</tbody></table>";
+// ── 登録 ──────────────────────────────────────────────────────────────
+var inYomi=document.getElementById("in-yomi");
+var previewHira=document.getElementById("preview-hira");
+inYomi.addEventListener("input",function(){
+  previewHira.textContent=isRomaji(this.value)?"→ "+romajiToHira(this.value):"";
+  updatePreview();
 });
-document.getElementById("btn-consonant-pattern-search").addEventListener("click",function(){
-  var q=normalizeConsonantQuery(document.getElementById("consonant-pattern-input").value);
-  var el=document.getElementById("consonant-pattern-results");
-  if(!q){el.textContent="パターンを入力すること。";el.className="empty";return;}
-  var matches=DB.filter(function(it){return consonantPatternOf(it.yomi)===q;});
-  if(!matches.length){el.textContent="一致なし。";el.className="empty";return;}
-  el.className="";
-  el.innerHTML="<table><thead><tr><th>表記</th><th>読み</th><th>末尾母音</th><th>子音P</th></tr></thead><tbody>"+
-    matches.map(function(it){
-      return "<tr><td>"+escapeHtml(it.hyouki)+"</td><td>"+escapeHtml(it.yomi)+"</td>"+
-        "<td>"+vowelChip(effectiveVowel(it))+"</td>"+
-        "<td style='font-family:monospace;color:var(--accent2);'>"+escapeHtml(consonantPatternOf(it.yomi))+"</td></tr>";
-    }).join("")+"</tbody></table>";
+inYomi.addEventListener("blur",function(){
+  if(isRomaji(this.value)){this.value=romajiToHira(this.value);previewHira.textContent="";}updatePreview();
 });
-function trailingMatchCount(seqL,item){
-  var seqI=extractSequence(item.yomi),count=0;
-  var la=seqL.length-1,li=seqI.length-1;
-  while(la>=0&&li>=0){
-    if(seqL[la].vowel!==null&&seqL[la].vowel===seqI[li].vowel){count++;la--;li--;}else break;
-  }
-  return count;
+function updatePreview(){
+  var y=inYomi.value.trim(),a=isRomaji(y)?romajiToHira(y):y,v=detectVowel(a);
+  document.getElementById("preview-vowel").innerHTML=v?vowelChip(v)+" "+VOWEL_LABEL[v]:"判定不可";
 }
-document.getElementById("btn-analyze").addEventListener("click",function(){
-  var seq=extractSequence(document.getElementById("rhyme-input").value);
-  var seqEl=document.getElementById("rhyme-seq");seqEl.innerHTML="";
-  seq.forEach(function(u){
-    var div=document.createElement("div");div.className="unit";
-    div.innerHTML="<div class='mora'>"+escapeHtml(u.mora)+"</div>"+vowelChip(u.vowel);seqEl.appendChild(div);
-  });
-  document.getElementById("rhyme-pattern").textContent=seq.map(function(u){return u.vowel||"n";}).join(" ")||"―";
-  var matchesEl=document.getElementById("rhyme-matches");
-  if(!seq.length){matchesEl.innerHTML="<div class='empty'>入力がない。</div>";return;}
-  var lastVowel=seq[seq.length-1].vowel;
-  var matches=DB.filter(function(it){return effectiveVowel(it)===lastVowel;});
-  if(!matches.length){matchesEl.innerHTML="<div class='empty'>一致する語がない。</div>";return;}
-  matches=matches.map(function(it){return{it:it,mc:trailingMatchCount(seq,it)};});
-  matches.sort(function(a,b){return b.mc-a.mc;});
-  matchesEl.innerHTML="<table><thead><tr><th>表記</th><th>読み</th><th>末尾母音</th><th>末尾一致</th><th>母音P</th></tr></thead><tbody>"+
-    matches.map(function(m){
-      var it=m.it;
-      var dots=Array.from({length:m.mc}).map(function(){return'<span style="color:var(--u);">●</span>';}).join("");
-      return "<tr><td>"+escapeHtml(it.hyouki)+"</td><td>"+escapeHtml(it.yomi)+"</td>"+
-        "<td>"+vowelChip(effectiveVowel(it))+"</td>"+
-        "<td>"+dots+" <span style='font-size:.68rem;color:var(--sub);'>"+m.mc+"モーラ</span></td>"+
-        "<td style='font-family:monospace;color:var(--accent2);'>"+escapeHtml(vowelPatternOf(it.yomi))+"</td></tr>";
-    }).join("")+"</tbody></table>";
-});
-document.getElementById("btn-compare").addEventListener("click",function(){
-  var seqA=extractSequence(document.getElementById("cmp-a").value);
-  var seqB=extractSequence(document.getElementById("cmp-b").value);
-  var el=document.getElementById("cmp-result");
-  if(!seqA.length&&!seqB.length){el.innerHTML="<div class='empty'>両方入力すること。</div>";return;}
-  var maxLen=Math.max(seqA.length,seqB.length);
-  var padA=maxLen-seqA.length,padB=maxLen-seqB.length;
-  var grid=document.createElement("div");grid.className="cmp-grid";
-  for(var i=0;i<maxLen;i++){
-    var uA=i>=padA?seqA[i-padA]:null,uB=i>=padB?seqB[i-padB]:null;
-    var vA=uA?uA.vowel:null,vB=uB?uB.vowel:null;
-    var col=document.createElement("div");col.className="cmp-col";
-    function mkMora(u,ov){
-      var div=document.createElement("div");
-      if(!u){div.className="cmp-mora cmp-empty";div.textContent="·";return div;}
-      div.className="cmp-mora"+(u.vowel!==null&&u.vowel===ov?" cmp-match":u.vowel===null?" cmp-null":" cmp-miss");
-      div.textContent=u.mora;return div;
-    }
-    col.appendChild(mkMora(uA,vB));
-    var sep=document.createElement("div");sep.style.cssText="height:3px;border-top:1px dotted var(--line);";col.appendChild(sep);
-    col.appendChild(mkMora(uB,vA));
-    grid.appendChild(col);
+document.getElementById("btn-add").addEventListener("click",function(){
+  var ry=inYomi.value.trim(),y=isRomaji(ry)?romajiToHira(ry):ry;
+  var st=document.getElementById("register-status");
+  if(!y){st.textContent="読みを入力すること。";st.className="status err";return;}
+  var h=document.getElementById("in-hyouki").value.trim()||y;
+  if(DB.some(function(it){return it.hyouki===h&&it.yomi===y;})){
+    st.textContent="既に登録済み：「"+h+"」（"+y+"）。";st.className="status err";return;
   }
-  el.innerHTML="";el.appendChild(grid);
-  var mc=0;
-  for(var j=0;j<seqA.length&&j<seqB.length;j++){
-    var ai=seqA[seqA.length-1-j],bi=seqB[seqB.length-1-j];
-    if(ai.vowel!==null&&ai.vowel===bi.vowel)mc++;else break;
-  }
-  var sc=document.createElement("div");sc.style.cssText="margin-top:5px;font-size:.76rem;color:var(--sub);";
-  sc.textContent="末尾 "+mc+" モーラ一致";el.appendChild(sc);
+  var item=normalizeItem({id:nextId++,hyouki:h,yomi:y,
+    override:document.getElementById("in-vowel-override").value||null,
+    memo:document.getElementById("in-memo").value.trim(),
+    tags:parseTags(document.getElementById("in-tags").value),fav:false,used:false});
+  DB.push(item);
+  ["in-hyouki","in-yomi","in-vowel-override","in-memo","in-tags"].forEach(function(id){document.getElementById(id).value="";});
+  previewHira.textContent="";updatePreview();
+  st.textContent="登録した：「"+item.hyouki+"」（"+item.yomi+"）";st.className="status ok";
+  onDBChange();
 });
 
-// ── エクスポート / インポート ────────────────────────────────────────
+// ── エクスポート / インポート ───────────────────────────────────────────
 document.getElementById("btn-export").addEventListener("click",function(){
   var blob=new Blob([JSON.stringify({version:2,db:DB,nextId:nextId},null,2)],{type:"application/json"});
   var url=URL.createObjectURL(blob),a=document.createElement("a");
@@ -1042,14 +1173,12 @@ function doImport(mode){
     reader.onload=function(e){
       try{
         var json=JSON.parse(e.target.result),arr=json.version?json.db:json;
-        var imported=arr.map(function(it){
-          return normalizeItem({id:nextId++,hyouki:it.hyouki||it.yomi||"",yomi:it.yomi||"",
-            override:it.override||null,memo:it.memo||"",tags:it.tags||[],fav:!!it.fav,used:!!it.used});
-        });
+        var imported=arr.map(function(it){return normalizeItem({id:nextId++,hyouki:it.hyouki||it.yomi||"",yomi:it.yomi||"",
+          override:it.override||null,memo:it.memo||"",tags:it.tags||[],fav:!!it.fav,used:!!it.used});});
         if(mode==="replace")DB=imported;else DB=DB.concat(imported);
         st.textContent=imported.length+"件を読み込んだ。";st.className="status ok";
         onDBChange();renderList();renderTagFilterbar();
-      }catch(err){st.textContent="読込失敗：JSONの形式を確認すること。";st.className="status err";}
+      }catch(err){st.textContent="読込失敗。";st.className="status err";}
     };
     reader.readAsText(file);
   };
@@ -1062,18 +1191,17 @@ document.getElementById("btn-seed-load").addEventListener("click",function(){
   DB.forEach(function(it){existing[it.hyouki+""+it.yomi]=true;});
   var added=0,skipped=0;
   SEED_WORDS.forEach(function(w){
-    var key=w.hyouki+""+w.yomi;
-    if(existing[key]){skipped++;return;}
+    var key=w.hyouki+""+w.yomi;if(existing[key]){skipped++;return;}
     existing[key]=true;
     DB.push(normalizeItem({id:nextId++,hyouki:w.hyouki,yomi:w.yomi,override:null,
       memo:w.memo||"",tags:w.memo?[w.memo]:[],fav:false,used:false}));
     added++;
   });
-  st.textContent=added+"件を追加した（"+skipped+"件は重複スキップ）。";st.className="status ok";
+  st.textContent=added+"件を追加（"+skipped+"件は重複スキップ）。";st.className="status ok";
   onDBChange();renderList();renderTagFilterbar();
 });
 
-// ── IndexedDB ────────────────────────────────────────────────────────
+// ── IndexedDB ─────────────────────────────────────────────────────────
 var idbDb=null,IDB_NAME="mora-zukan-idb",IDB_VER=1,IDB_STORE="store";
 function openIDB(cb){
   if(idbDb){cb(null,idbDb);return;}
@@ -1087,47 +1215,44 @@ function openIDB(cb){
 function idbPut(data,cb){
   openIDB(function(err,db){
     if(err)return cb&&cb(err);
-    try{
-      var tx=db.transaction(IDB_STORE,"readwrite");
+    try{var tx=db.transaction(IDB_STORE,"readwrite");
       tx.objectStore(IDB_STORE).put({k:"data",v:data});
-      tx.oncomplete=function(){cb&&cb(null);};tx.onerror=function(e){cb&&cb(e.target.error);};
-    }catch(e){cb&&cb(e);}
+      tx.oncomplete=function(){cb&&cb(null);};tx.onerror=function(e){cb&&cb(e.target.error);};}
+    catch(e){cb&&cb(e);}
   });
 }
 function idbGet(cb){
   openIDB(function(err,db){
     if(err)return cb(err);
-    try{
-      var tx=db.transaction(IDB_STORE,"readonly");
+    try{var tx=db.transaction(IDB_STORE,"readonly");
       var req=tx.objectStore(IDB_STORE).get("data");
       req.onsuccess=function(e){cb(null,e.target.result?e.target.result.v:null);};
-      req.onerror=function(e){cb(e.target.error);};
-    }catch(e){cb(e);}
+      req.onerror=function(e){cb(e.target.error);};}
+    catch(e){cb(e);}
   });
 }
 
-// ── File System Access API ─────────────────────────────────────────────
+// ── 自動保存 ──────────────────────────────────────────────────────────
 var fileHandle=null,saveTimer=null;
 var saveStatusEl=document.getElementById("save-status");
-function setSaveStatus(state,text){saveStatusEl.className="status-badge "+state;saveStatusEl.textContent=text;}
-function getSnapshot(){return{version:2,db:DB,nextId:nextId};}
+function setSaveStatus(cls,txt){saveStatusEl.className="status-badge "+cls;saveStatusEl.textContent=txt;}
+function getSnap(){return{version:2,db:DB,nextId:nextId};}
 function writeToFile(cb){
   if(!fileHandle||!window.FileSystemFileHandle){cb&&cb(null);return;}
   fileHandle.createWritable().then(function(w){
-    return w.write(JSON.stringify(getSnapshot(),null,2)).then(function(){return w.close();});
+    return w.write(JSON.stringify(getSnap(),null,2)).then(function(){return w.close();});
   }).then(function(){setSaveStatus("ok","✓ ファイル保存済");cb&&cb(null);})
-  .catch(function(e){setSaveStatus("err","⚠ ファイル書込エラー");cb&&cb(e);});
+  .catch(function(e){setSaveStatus("err","⚠ 書込エラー");cb&&cb(e);});
 }
 function onDBChange(){
   setSaveStatus("busy","保存中…");
   if(saveTimer)clearTimeout(saveTimer);
   saveTimer=setTimeout(function(){
-    idbPut(getSnapshot(),function(err){
-      if(!err){
-        setSaveStatus("ok","✓ 自動保存済");
+    idbPut(getSnap(),function(err){
+      if(!err){setSaveStatus("ok","✓ 自動保存済");
         document.getElementById("idb-status").textContent="IndexedDBに保存済。";
-        document.getElementById("idb-status").className="status ok";
-      }else setSaveStatus("err","⚠ IDB保存失敗");
+        document.getElementById("idb-status").className="status ok";}
+      else setSaveStatus("err","⚠ IDB保存失敗");
     });
     writeToFile(null);
   },600);
@@ -1137,118 +1262,70 @@ function loadFromIDB(){
     if(err||!data)return;
     try{
       var arr=data.version?data.db:data;
-      DB=arr.map(function(it){return normalizeItem({
-        id:it.id||nextId++,hyouki:it.hyouki||"",yomi:it.yomi||"",
-        override:it.override||null,memo:it.memo||"",tags:it.tags||[],fav:!!it.fav,used:!!it.used
-      });});
+      DB=arr.map(function(it){return normalizeItem({id:it.id||nextId++,hyouki:it.hyouki||"",yomi:it.yomi||"",
+        override:it.override||null,memo:it.memo||"",tags:it.tags||[],fav:!!it.fav,used:!!it.used});});
       if(data.nextId&&data.nextId>nextId)nextId=data.nextId;
-      renderList();renderTagFilterbar();
-      setSaveStatus("ok","✓ 復元 ("+DB.length+"件)");
-    }catch(e){console.error("IDB load error",e);}
+      renderList();renderTagFilterbar();setSaveStatus("ok","✓ 復元 ("+DB.length+"件)");
+    }catch(e){}
   });
 }
 function selectSaveFile(){
-  if(!window.showSaveFilePicker){
-    alert("このブラウザはファイル直接保存に未対応。（Chrome/Edge推奨）\nJSONエクスポートを使ってください。");return;
-  }
+  if(!window.showSaveFilePicker){alert("Chrome/Edge推奨。JSONエクスポートを使ってください。");return;}
   window.showSaveFilePicker({suggestedName:"mora_zukan.json",types:[{description:"JSON",accept:{"application/json":[".json"]}}]})
-    .then(function(handle){
-      fileHandle=handle;setSaveStatus("busy","設定中…");
-      writeToFile(function(err){if(!err)setSaveStatus("ok","✓ ファイル保存済: "+handle.name);});
-    }).catch(function(){});
+    .then(function(h){fileHandle=h;setSaveStatus("busy","設定中…");writeToFile(function(err){if(!err)setSaveStatus("ok","✓ ファイル保存済: "+h.name);});}).catch(function(){});
 }
 document.getElementById("btn-select-file").addEventListener("click",selectSaveFile);
 document.getElementById("btn-select-file2").addEventListener("click",selectSaveFile);
 
-// ── PWA: オンライン/オフラインインジケーター ─────────────────────────
+// ── オンライン状態 ────────────────────────────────────────────────────
 var onlineEl=document.getElementById("online-status");
-function updateOnlineStatus(){
-  if(navigator.onLine){
-    onlineEl.className="status-badge ok";onlineEl.textContent="🌐 オンライン";
-    onlineEl.style.display="none"; // オンライン時は非表示（省スペース）
-  }else{
-    onlineEl.className="status-badge offline";onlineEl.textContent="✈ オフライン";
-    onlineEl.style.display="";
-  }
+function updateOnline(){
+  if(navigator.onLine){onlineEl.style.display="none";}
+  else{onlineEl.style.display="";onlineEl.className="status-badge offline";onlineEl.textContent="✈ オフライン";}
 }
-window.addEventListener("online",function(){updateOnlineStatus();setSaveStatus("ok","✓ 再接続");});
-window.addEventListener("offline",function(){updateOnlineStatus();setSaveStatus("","⚡ オフライン中 (IDB保存済)");});
-updateOnlineStatus();
+window.addEventListener("online",updateOnline);window.addEventListener("offline",updateOnline);updateOnline();
 
-// ── PWA: beforeinstallprompt ─────────────────────────────────────────
-var deferredPrompt=null;
-var installBtn=document.getElementById("btn-install");
-window.addEventListener("beforeinstallprompt",function(e){
-  e.preventDefault();deferredPrompt=e;
-  installBtn.style.display="";
-});
+// ── インストールボタン ─────────────────────────────────────────────────
+var deferredPrompt=null,installBtn=document.getElementById("btn-install");
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();deferredPrompt=e;installBtn.style.display="";});
 installBtn.addEventListener("click",function(){
   if(!deferredPrompt)return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(function(){deferredPrompt=null;installBtn.style.display="none";});
+  deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;installBtn.style.display="none";});
 });
-// インストール済み検知
-window.addEventListener("appinstalled",function(){
-  installBtn.style.display="none";
-  setSaveStatus("ok","📲 インストール完了");
-});
+window.addEventListener("appinstalled",function(){installBtn.style.display="none";setSaveStatus("ok","📲 インストール完了");});
 
-// ── PWA: Service Worker ──────────────────────────────────────────────
+// ── Service Worker ────────────────────────────────────────────────────
 var updateBanner=document.getElementById("update-banner");
 function initSW(){
   if(!("serviceWorker" in navigator))return;
-  var swSrc=document.getElementById("sw-src").textContent;
-  var swBlob=new Blob([swSrc],{type:"application/javascript"});
-  var swUrl=URL.createObjectURL(swBlob);
+  var src=document.getElementById("sw-src").textContent;
+  var swUrl=URL.createObjectURL(new Blob([src],{type:"application/javascript"}));
   navigator.serviceWorker.register(swUrl,{scope:location.pathname||"/"}).then(function(reg){
-    // 更新チェック（既存 SW があれば waiting に入る）
     reg.addEventListener("updatefound",function(){
-      var newWorker=reg.installing;
-      newWorker.addEventListener("statechange",function(){
-        if(newWorker.state==="installed"&&navigator.serviceWorker.controller){
-          // 新しい SW が waiting → バナー表示
+      var w=reg.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="installed"&&navigator.serviceWorker.controller){
           updateBanner.style.display="";
-          updateBanner.addEventListener("click",function(){
-            newWorker.postMessage({type:"SKIP_WAITING"});
-            updateBanner.style.display="none";
-          });
+          updateBanner.addEventListener("click",function(){w.postMessage({type:"SKIP_WAITING"});updateBanner.style.display="none";});
         }
       });
     });
-    // 新 SW アクティベート後にリロード
     var refreshing=false;
-    navigator.serviceWorker.addEventListener("controllerchange",function(){
-      if(!refreshing){refreshing=true;window.location.reload();}
-    });
-  }).catch(function(e){console.warn("SW register failed:",e.message);});
+    navigator.serviceWorker.addEventListener("controllerchange",function(){if(!refreshing){refreshing=true;location.reload();}});
+  }).catch(function(){});
 }
-
-// ── PWA: Manifest (blob) ─────────────────────────────────────────────
 function injectManifest(){
   try{
-    var themeColor=(isLightMode?LIGHT_THEMES:DARK_THEMES)[themeIndex].bg;
-    var manifest={
-      name:"モーラ・母音図鑑",short_name:"母音図鑑",
+    var t=(isLightMode?LIGHT_THEMES:DARK_THEMES)[themeIndex];
+    var manifest={name:"モーラ・母音図鑑",short_name:"母音図鑑",
       description:"作詞用 モーラ・母音の登録と押韻検索ツール",
-      start_url:location.href,display:"standalone",
-      orientation:"any",
-      background_color:themeColor,theme_color:themeColor,
-      lang:"ja",
-      icons:[
-        {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230d0f17'/%3E%3Ccircle cx='256' cy='190' r='95' fill='none' stroke='%237aa2f7' stroke-width='16'/%3E%3Ctext x='256' y='215' font-size='115' text-anchor='middle' dominant-baseline='middle' fill='%237aa2f7' font-family='sans-serif' font-weight='bold'%3E母%3C/text%3E%3Ctext x='256' y='370' font-size='55' text-anchor='middle' fill='%23bb9af7' font-family='sans-serif'%3Ea i u e o%3C/text%3E%3C/svg%3E",
-          sizes:"any",type:"image/svg+xml",purpose:"any maskable"}
-      ],
-      shortcuts:[
-        {name:"登録",short_name:"登録",url:location.href+"#register",
-          description:"モーラを新規登録する"},
-        {name:"図鑑",short_name:"図鑑",url:location.href+"#list",
-          description:"登録済みモーラを確認する"}
-      ]
-    };
-    var mblob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
-    var murl=URL.createObjectURL(mblob);
+      start_url:location.href,display:"standalone",orientation:"any",
+      background_color:t.bg,theme_color:t.bg,lang:"ja",
+      icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230d0f17'/%3E%3Ctext x='256' y='320' font-size='280' text-anchor='middle' fill='%237aa2f7' font-family='sans-serif' font-weight='bold'%3E母%3C/text%3E%3C/svg%3E",
+        sizes:"any",type:"image/svg+xml",purpose:"any maskable"}],
+      shortcuts:[{name:"検索",url:location.href+"#search"},{name:"登録",url:location.href+"#register"}]};
     var link=document.querySelector('link[rel="manifest"]')||document.createElement("link");
-    link.rel="manifest";link.href=murl;
+    link.rel="manifest";link.href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"}));
     if(!link.parentNode)document.head.appendChild(link);
   }catch(e){}
 }
@@ -1259,6 +1336,8 @@ injectManifest();
 loadFromIDB();
 initSW();
 setSaveStatus("","― 読込中…");
+// 検索タブにフォーカス
+setTimeout(function(){mainSearch.focus();},100);
 
 })();
 </script>
