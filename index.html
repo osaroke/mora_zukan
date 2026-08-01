@@ -7,10 +7,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="母音図鑑">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230d0f17'/%3E%3Ccircle cx='256' cy='190' r='95' fill='none' stroke='%237aa2f7' stroke-width='16'/%3E%3Ctext x='256' y='215' font-size='115' text-anchor='middle' dominant-baseline='middle' fill='%237aa2f7' font-family='sans-serif' font-weight='bold'%3E母%3C/text%3E%3Ctext x='256' y='370' font-size='55' text-anchor='middle' fill='%23bb9af7' font-family='sans-serif'%3Ea i u e o%3C/text%3E%3C/svg%3E">
-<meta name="description" content="作詞用 モーラ・母音の登録と押韻検索ツール">
-<title>モーラ・母音図鑑</title>
+<meta name="apple-mobile-web-app-title" content="MORA">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20fill%3D%22%230b0d14%22/%3E%3Ccircle%20cx%3D%2286%22%20cy%3D%22256%22%20r%3D%2252%22%20fill%3D%22%23f7768e%22/%3E%3Ccircle%20cx%3D%22171%22%20cy%3D%22256%22%20r%3D%2252%22%20fill%3D%22%23e0af68%22/%3E%3Ccircle%20cx%3D%22256%22%20cy%3D%22256%22%20r%3D%2252%22%20fill%3D%22%239ece6a%22/%3E%3Ccircle%20cx%3D%22341%22%20cy%3D%22256%22%20r%3D%2252%22%20fill%3D%22%237dcfff%22/%3E%3Ccircle%20cx%3D%22426%22%20cy%3D%22256%22%20r%3D%2252%22%20fill%3D%22%23bb9af7%22/%3E%3C/svg%3E">
+<meta name="description" content="Vowel pattern search tool for Japanese songwriting">
+<title>MORA</title>
 <style>
 :root{
   --bg:#0b0d14;--panel:#13162000;--panel2:#1a1e2d;--line:#252a3d;
@@ -143,21 +143,19 @@ button.small.used-on{color:var(--u);border-color:var(--u);}
   0%{opacity:.65;transform:scale(1) translate(0,0);}
   100%{opacity:1;transform:scale(1.1) translate(2%,-3%);}}
 .hero-vowels{
-  display:flex;gap:12px;justify-content:center;margin-bottom:22px;position:relative;}
+  display:flex;gap:16px;justify-content:center;margin-bottom:26px;position:relative;}
 .hv{
-  width:40px;height:40px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.05rem;font-weight:900;color:#070809;
-  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  width:10px;height:10px;border-radius:50%;
+  display:block;
   animation:hvFloat 3.2s ease-in-out infinite alternate;}
-.hv-a{background:var(--a);animation-delay:0s;}
-.hv-i{background:var(--i);animation-delay:.35s;}
-.hv-u{background:var(--u);animation-delay:.7s;}
-.hv-e{background:var(--e);animation-delay:1.05s;}
-.hv-o{background:var(--o);animation-delay:1.4s;}
+.hv-a{background:var(--a);box-shadow:0 0 10px 3px color-mix(in srgb,var(--a) 55%,transparent);animation-delay:0s;}
+.hv-i{background:var(--i);box-shadow:0 0 10px 3px color-mix(in srgb,var(--i) 55%,transparent);animation-delay:.35s;}
+.hv-u{background:var(--u);box-shadow:0 0 10px 3px color-mix(in srgb,var(--u) 55%,transparent);animation-delay:.7s;}
+.hv-e{background:var(--e);box-shadow:0 0 10px 3px color-mix(in srgb,var(--e) 55%,transparent);animation-delay:1.05s;}
+.hv-o{background:var(--o);box-shadow:0 0 10px 3px color-mix(in srgb,var(--o) 55%,transparent);animation-delay:1.4s;}
 @keyframes hvFloat{
-  0%{transform:translateY(0) scale(1);}
-  100%{transform:translateY(-8px) scale(1.08);}}
+  0%{transform:translateY(0) scale(1);opacity:.7;}
+  100%{transform:translateY(-10px) scale(1.4);opacity:1;}}
 .hero-app-title{
   font-size:clamp(2rem,8vw,3.2rem);font-weight:900;
   margin:0 0 10px;letter-spacing:.12em;
@@ -170,6 +168,22 @@ button.small.used-on{color:var(--u);border-color:var(--u);}
 .hero-app-sub{
   font-size:.78rem;color:var(--sub);margin:0;
   letter-spacing:.12em;text-transform:uppercase;opacity:.8;}
+/* ── ヒーローSVGデコ ── */
+.hero-deco{
+  display:block;width:min(340px,88%);margin:22px auto 0;
+  opacity:.35;overflow:visible;}
+.hero-deco .wave{
+  fill:none;stroke-linecap:round;
+  animation:waveDrift 4s ease-in-out infinite alternate;}
+.hero-deco .w1{stroke:var(--accent);stroke-width:1.8;animation-delay:0s;}
+.hero-deco .w2{stroke:var(--accent2);stroke-width:1.2;animation-delay:.6s;opacity:.7;}
+.hero-deco .w3{stroke:var(--accent);stroke-width:.8;animation-delay:1.2s;opacity:.5;}
+.hero-deco .ring{fill:none;stroke:var(--accent2);stroke-width:.8;opacity:.5;
+  animation:ringPulse 3.5s ease-in-out infinite alternate;}
+@keyframes waveDrift{
+  0%{transform:translateY(0);}100%{transform:translateY(-4px);}}
+@keyframes ringPulse{
+  0%{r:14;opacity:.3;}100%{r:18;opacity:.6;}}
 
 /* ── 検索UI ── */
 .search-hero{
@@ -298,7 +312,7 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
   .panel{padding:10px;}.sub-title{display:none;}
   .home-hero{padding:32px 16px 24px;}
   .hero-app-title{font-size:2.2rem;}
-  .hv{width:34px;height:34px;font-size:.95rem;}
+  .hv{width:8px;height:8px;}
   .search-hero{padding:14px 12px 10px;}
   .search-input-wrap input{font-size:16px;padding:10px 40px 10px 12px;}
   .rc-pattern{display:none;}.rc-tag{display:none;}
@@ -336,8 +350,8 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
 
 <header>
   <div class="header-left">
-    <h1>モーラ・母音図鑑</h1>
-    <p class="sub-title">作詞用 ― モーラ・母音の登録と押韻検索</p>
+    <h1>MORA</h1>
+    <p class="sub-title">Vowel Pattern Search</p>
   </div>
   <div class="header-right">
     <span class="status-badge" id="online-status" style="display:none;">✈ オフライン</span>
@@ -389,14 +403,26 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
   <div class="home-hero" id="home-hero">
     <div class="home-hero-glow"></div>
     <div class="hero-vowels">
-      <span class="hv hv-a">a</span>
-      <span class="hv hv-i">i</span>
-      <span class="hv hv-u">u</span>
-      <span class="hv hv-e">e</span>
-      <span class="hv hv-o">o</span>
+      <span class="hv hv-a"></span>
+      <span class="hv hv-i"></span>
+      <span class="hv hv-u"></span>
+      <span class="hv hv-e"></span>
+      <span class="hv hv-o"></span>
     </div>
-    <h2 class="hero-app-title">母音図鑑</h2>
-    <p class="hero-app-sub">作詞用 押韻・母音パターン検索</p>
+    <h2 class="hero-app-title">MORA</h2>
+    <p class="hero-app-sub">Vowel Pattern Search for Songwriting</p>
+    <!-- デコSVG：ウェーブフォーム＋リング -->
+    <svg class="hero-deco" viewBox="0 0 280 56" xmlns="http://www.w3.org/2000/svg">
+      <!-- 同心リング群 -->
+      <circle class="ring" cx="20" cy="28" r="14"/>
+      <circle class="ring" cx="20" cy="28" r="9" style="animation-delay:.4s;"/>
+      <circle class="ring" cx="260" cy="28" r="14" style="animation-delay:.2s;"/>
+      <circle class="ring" cx="260" cy="28" r="9" style="animation-delay:.7s;"/>
+      <!-- ウェーブライン3本 -->
+      <path class="wave w1" d="M40 28 C60 10 80 46 100 28 S140 10 160 28 S200 46 220 28 S250 14 260 20"/>
+      <path class="wave w2" d="M40 28 C60 14 80 42 100 28 S140 14 160 28 S200 42 220 28 S250 18 260 24"/>
+      <path class="wave w3" d="M40 28 C60 18 80 38 100 28 S140 18 160 28 S200 38 220 28 S255 22 260 26"/>
+    </svg>
   </div>
 
   <!-- 大きな検索ボックス -->
@@ -1437,11 +1463,11 @@ function initSW(){
 function injectManifest(){
   try{
     var t=(isLightMode?LIGHT_THEMES:DARK_THEMES)[themeIndex];
-    var manifest={name:"モーラ・母音図鑑",short_name:"母音図鑑",
-      description:"作詞用 モーラ・母音の登録と押韻検索ツール",
+    var manifest={name:"MORA",short_name:"MORA",
+      description:"Vowel pattern search tool for Japanese songwriting",
       start_url:location.href,display:"standalone",orientation:"any",
       background_color:t.bg,theme_color:t.bg,lang:"ja",
-      icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230d0f17'/%3E%3Ctext x='256' y='320' font-size='280' text-anchor='middle' fill='%237aa2f7' font-family='sans-serif' font-weight='bold'%3E母%3C/text%3E%3C/svg%3E",
+      icons:[{src:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="'+t.bg+'"/><circle cx="86" cy="256" r="52" fill="#f7768e"/><circle cx="171" cy="256" r="52" fill="#e0af68"/><circle cx="256" cy="256" r="52" fill="#9ece6a"/><circle cx="341" cy="256" r="52" fill="#7dcfff"/><circle cx="426" cy="256" r="52" fill="#bb9af7"/></svg>'),
         sizes:"any",type:"image/svg+xml",purpose:"any maskable"}],
       shortcuts:[{name:"検索",url:location.href+"#search"},{name:"登録",url:location.href+"#register"}]};
     var link=document.querySelector('link[rel="manifest"]')||document.createElement("link");
