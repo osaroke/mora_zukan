@@ -221,6 +221,14 @@ button.small.used-on{color:var(--u);border-color:var(--u);}
 .mode-btn.active{
   background:var(--accent);color:#05111e;border-color:transparent;font-weight:800;
   box-shadow:0 2px 14px color-mix(in srgb,var(--accent) 50%,transparent);}
+.match-btn{
+  padding:3px 11px;border-radius:20px;font-size:.70rem;cursor:pointer;
+  background:var(--panel2);border:1px solid var(--line);color:var(--sub);
+  transition:all .15s;font-weight:500;}
+.match-btn:hover{border-color:var(--accent);color:var(--text);}
+.match-btn.active{
+  background:var(--accent2);color:#05111e;border-color:transparent;font-weight:700;
+  box-shadow:0 1px 8px color-mix(in srgb,var(--accent2) 45%,transparent);}
 .search-hint{
   font-size:.70rem;color:var(--sub);margin-top:11px;line-height:1.7;}
 .search-hint code{
@@ -441,6 +449,12 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
       <button class="mode-btn" data-mode="consonant">子音パターン</button>
       <button class="mode-btn" data-mode="lyric">歌詞解析</button>
       <button class="mode-btn" data-mode="keyword">キーワード</button>
+    </div>
+    <!-- 完全一致トグル（母音モードのみ表示） -->
+    <div class="vowel-match-bar" id="vowel-match-bar" style="margin-top:8px;display:flex;gap:6px;align-items:center;">
+      <span style="font-size:.66rem;color:var(--sub);">一致方法:</span>
+      <button class="match-btn active" id="match-suffix" title="入力パターンで末尾が一致するものを表示（広め）">末尾一致</button>
+      <button class="match-btn" id="match-exact" title="母音パターンが完全に同じものだけ表示">完全一致</button>
     </div>
     <div class="search-hint" id="search-hint">
       母音パターン例: <code>aiai</code>（さいわい・さいかい系）　<code>ua</code>（夢・空系）　<code>oio</code>（恋心系）
@@ -836,46 +850,47 @@ function allUniqueTags(){
 var activeVowels={},filterFav=false,filterUsed=false,activeTags={};
 var sortKey="id",sortDir="asc",PAGE_SIZE=50,listPage=0;
 var searchMode="vowel",searchPage=0,SEARCH_PAGE=30;
+var vowelExact=false;   // true=完全一致のみ  false=末尾一致（デフォルト）
 var lastSearchQuery="";
 
 // ── テーマ（爽やかポップ） ─────────────────────────────────────────────
+// text=メインテキスト sub=補助テキスト（各テーマに合わせた色）
 var DARK_THEMES=[
   // ── 爽やか系ダーク ──
-  {name:"sky",      bg:"#050f1c",panel:"#091a2e",panel2:"#0e2540",line:"#163458",accent:"#38bdf8",accent2:"#67e8f9"},
-  {name:"mint",     bg:"#041410",panel:"#071e18",panel2:"#0c2a22",line:"#113c2e",accent:"#34d399",accent2:"#6ee7b7"},
-  {name:"coral",    bg:"#150805",panel:"#241008",panel2:"#30160d",line:"#472214",accent:"#fb7185",accent2:"#fda4af"},
-  {name:"candy",    bg:"#100b1a",panel:"#1c1430",panel2:"#261b44",line:"#382756",accent:"#e879f9",accent2:"#c084fc"},
-  {name:"sunny",    bg:"#0f0e04",panel:"#1c1a06",panel2:"#26240a",line:"#38350f",accent:"#fbbf24",accent2:"#86efac"},
+  {name:"sky",      bg:"#050f1c",panel:"#091a2e",panel2:"#0e2540",line:"#163458",accent:"#38bdf8",accent2:"#67e8f9",  text:"#dff4ff",sub:"#5a90b8"},
+  {name:"mint",     bg:"#041410",panel:"#071e18",panel2:"#0c2a22",line:"#113c2e",accent:"#34d399",accent2:"#6ee7b7",  text:"#d0f5e8",sub:"#4a9070"},
+  {name:"coral",    bg:"#150805",panel:"#241008",panel2:"#30160d",line:"#472214",accent:"#fb7185",accent2:"#fda4af",  text:"#ffe4e4",sub:"#c07070"},
+  {name:"candy",    bg:"#100b1a",panel:"#1c1430",panel2:"#261b44",line:"#382756",accent:"#e879f9",accent2:"#c084fc",  text:"#f0d8ff",sub:"#9068c0"},
+  {name:"sunny",    bg:"#0f0e04",panel:"#1c1a06",panel2:"#26240a",line:"#38350f",accent:"#fbbf24",accent2:"#86efac",  text:"#fff8d0",sub:"#a09040"},
   // ── ポップ系ダーク ──
-  {name:"ocean",    bg:"#021214",panel:"#041e22",panel2:"#072c32",line:"#0b4048",accent:"#06b6d4",accent2:"#34d399"},
-  {name:"berry",    bg:"#130610",panel:"#20091c",panel2:"#2c0e28",line:"#421640",accent:"#f43f5e",accent2:"#fb7185"},
-  {name:"citrus",   bg:"#0a0f02",panel:"#141a04",panel2:"#1d2608",line:"#2c380e",accent:"#a3e635",accent2:"#fb923c"},
-  {name:"lavender", bg:"#0c0b18",panel:"#16142c",panel2:"#1e1c3c",line:"#2e2a54",accent:"#a78bfa",accent2:"#f0abfc"},
-  {name:"peach",    bg:"#140c06",panel:"#22140a",panel2:"#2e1c10",line:"#462c1a",accent:"#fb923c",accent2:"#f472b6"}
+  {name:"ocean",    bg:"#021214",panel:"#041e22",panel2:"#072c32",line:"#0b4048",accent:"#06b6d4",accent2:"#34d399",  text:"#d0f8ff",sub:"#3a90a8"},
+  {name:"berry",    bg:"#130610",panel:"#20091c",panel2:"#2c0e28",line:"#421640",accent:"#f43f5e",accent2:"#fb7185",  text:"#ffd0d8",sub:"#b05060"},
+  {name:"citrus",   bg:"#0a0f02",panel:"#141a04",panel2:"#1d2608",line:"#2c380e",accent:"#a3e635",accent2:"#fb923c",  text:"#eaffd0",sub:"#80a030"},
+  {name:"lavender", bg:"#0c0b18",panel:"#16142c",panel2:"#1e1c3c",line:"#2e2a54",accent:"#a78bfa",accent2:"#f0abfc",  text:"#ead8ff",sub:"#8070b8"},
+  {name:"peach",    bg:"#140c06",panel:"#22140a",panel2:"#2e1c10",line:"#462c1a",accent:"#fb923c",accent2:"#f472b6",  text:"#ffe8d8",sub:"#b07850"}
 ];
 var LIGHT_THEMES=[
   // ── 爽やか系ライト ──
-  {name:"sky",      bg:"#f0f9ff",panel:"#e0f2fe",panel2:"#bae6fd",line:"#7dd3fc",accent:"#0284c7",accent2:"#0891b2"},
-  {name:"mint",     bg:"#f0fdf4",panel:"#dcfce7",panel2:"#bbf7d0",line:"#86efac",accent:"#059669",accent2:"#0d9488"},
-  {name:"coral",    bg:"#fff1f2",panel:"#ffe4e6",panel2:"#fecdd3",line:"#fda4af",accent:"#e11d48",accent2:"#f43f5e"},
-  {name:"candy",    bg:"#fdf4ff",panel:"#fae8ff",panel2:"#f5d0fe",line:"#e879f9",accent:"#a21caf",accent2:"#7c3aed"},
-  {name:"sunny",    bg:"#fefce8",panel:"#fef9c3",panel2:"#fef08a",line:"#fde047",accent:"#ca8a04",accent2:"#16a34a"},
+  {name:"sky",      bg:"#f0f9ff",panel:"#e0f2fe",panel2:"#bae6fd",line:"#7dd3fc",accent:"#0369a1",accent2:"#0891b2",  text:"#082040",sub:"#2a6090"},
+  {name:"mint",     bg:"#f0fdf4",panel:"#dcfce7",panel2:"#bbf7d0",line:"#86efac",accent:"#047857",accent2:"#0d9488",  text:"#052e16",sub:"#166534"},
+  {name:"coral",    bg:"#fff1f2",panel:"#ffe4e6",panel2:"#fecdd3",line:"#fda4af",accent:"#be123c",accent2:"#e11d48",  text:"#3b0010",sub:"#9f1239"},
+  {name:"candy",    bg:"#fdf4ff",panel:"#fae8ff",panel2:"#f5d0fe",line:"#e879f9",accent:"#7e22ce",accent2:"#6d28d9",  text:"#2e0a40",sub:"#7e22ce"},
+  {name:"sunny",    bg:"#fefce8",panel:"#fef9c3",panel2:"#fef08a",line:"#fde047",accent:"#92400e",accent2:"#15803d",  text:"#1c1400",sub:"#78520a"},
   // ── ポップ系ライト ──
-  {name:"ocean",    bg:"#ecfeff",panel:"#cffafe",panel2:"#a5f3fc",line:"#67e8f9",accent:"#0e7490",accent2:"#059669"},
-  {name:"berry",    bg:"#fff0f3",panel:"#ffe2e8",panel2:"#ffc9d5",line:"#ffa0b4",accent:"#be123c",accent2:"#db2777"},
-  {name:"citrus",   bg:"#f7ffe4",panel:"#ecfccb",panel2:"#d9f99d",line:"#bef264",accent:"#4d7c0f",accent2:"#c2410c"},
-  {name:"lavender", bg:"#f5f3ff",panel:"#ede9fe",panel2:"#ddd6fe",line:"#c4b5fd",accent:"#7c3aed",accent2:"#a21caf"},
-  {name:"peach",    bg:"#fff7ed",panel:"#ffedd5",panel2:"#fed7aa",line:"#fdba74",accent:"#c2410c",accent2:"#db2777"}
+  {name:"ocean",    bg:"#ecfeff",panel:"#cffafe",panel2:"#a5f3fc",line:"#67e8f9",accent:"#0e7490",accent2:"#0f766e",  text:"#042830",sub:"#0e7490"},
+  {name:"berry",    bg:"#fff0f3",panel:"#ffe2e8",panel2:"#ffc9d5",line:"#ffa0b4",accent:"#9f1239",accent2:"#be185d",  text:"#3b0010",sub:"#9f1239"},
+  {name:"citrus",   bg:"#f7ffe4",panel:"#ecfccb",panel2:"#d9f99d",line:"#bef264",accent:"#3f6212",accent2:"#9a3412",  text:"#1a2600",sub:"#3f6212"},
+  {name:"lavender", bg:"#f5f3ff",panel:"#ede9fe",panel2:"#ddd6fe",line:"#c4b5fd",accent:"#6d28d9",accent2:"#86198f",  text:"#1e0840",sub:"#6d28d9"},
+  {name:"peach",    bg:"#fff7ed",panel:"#ffedd5",panel2:"#fed7aa",line:"#fdba74",accent:"#9a3412",accent2:"#9d174d",  text:"#2c1008",sub:"#9a3412"}
 ];
 var isLightMode=false,themeIndex=0;
 function applyTheme(){
   var t=(isLightMode?LIGHT_THEMES:DARK_THEMES)[themeIndex];
-  var tx=isLightMode?{text:"#0c1a2e",sub:"#4a6680"}:{text:"#e8f4ff",sub:"#6a8caa"};
   var s=document.body.style;
   s.setProperty("--bg",t.bg);s.setProperty("--panel",t.panel);
   s.setProperty("--panel2",t.panel2);s.setProperty("--line",t.line);
   s.setProperty("--accent",t.accent);s.setProperty("--accent2",t.accent2);
-  s.setProperty("--text",tx.text);s.setProperty("--sub",tx.sub);
+  s.setProperty("--text",t.text);s.setProperty("--sub",t.sub);
   var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute("content",t.bg);
 }
 function renderSwatches(){
@@ -938,6 +953,9 @@ var searchInitMsg=document.getElementById("search-initial-msg");
 var searchResultsDiv=document.getElementById("search-results");
 var resultCards=document.getElementById("result-cards");
 var homeHero=document.getElementById("home-hero");
+var vowelMatchBar=document.getElementById("vowel-match-bar");
+var matchSuffix=document.getElementById("match-suffix");
+var matchExact=document.getElementById("match-exact");
 var resultsCount=document.getElementById("results-count");
 var lyricPanel=document.getElementById("lyric-panel");
 
@@ -959,6 +977,7 @@ Array.prototype.forEach.call(document.querySelectorAll(".mode-btn"),function(btn
                            searchMode==="consonant"?"子音パターン (skr)":
                            searchMode==="lyric"?"歌詞（ひらがな）例: そらをみあげて":
                            "キーワード（表記・読み・タグ）";
+    if(vowelMatchBar)vowelMatchBar.style.display=(searchMode==="vowel")?"flex":"none";
     searchPage=0;doSearch();
     mainSearch.focus();
   });
@@ -979,6 +998,18 @@ searchClear.addEventListener("click",function(){
   searchPage=0;doSearch();mainSearch.focus();
 });
 
+// 完全一致トグル
+matchSuffix.addEventListener("click",function(){
+  vowelExact=false;
+  matchSuffix.classList.add("active");matchExact.classList.remove("active");
+  searchPage=0;doSearch();
+});
+matchExact.addEventListener("click",function(){
+  vowelExact=true;
+  matchExact.classList.add("active");matchSuffix.classList.remove("active");
+  searchPage=0;doSearch();
+});
+
 function doSearch(){
   var raw=mainSearch.value.trim();
   lastSearchQuery=raw;
@@ -991,9 +1022,9 @@ function doSearch(){
   var results=[];
   if(searchMode==="vowel"){
     var q=raw.toLowerCase().replace(/[^aiueon]/g,"");
-    results=DB.filter(function(it){return vowelPatternOf(it.yomi)===q;});
-    // 完全一致なければ末尾一致でソート
-    if(!results.length){
+    if(vowelExact){
+      results=DB.filter(function(it){return vowelPatternOf(it.yomi)===q;});
+    }else{
       results=DB.filter(function(it){
         var p=vowelPatternOf(it.yomi);return p.length>=q.length&&p.slice(-q.length)===q;
       }).sort(function(a,b){
