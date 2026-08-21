@@ -353,6 +353,64 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
 @media(display-mode:standalone)and(max-width:640px){
   nav{padding-bottom:max(var(--safe-bottom),12px);}
 }
+/* ── 母音パターンチップ ── */
+.pchip{display:inline-flex;align-items:center;justify-content:center;
+  width:14px;height:14px;border-radius:3px;font-size:.56rem;font-weight:700;
+  color:#0e0f14;margin:1px;vertical-align:middle;line-height:1;}
+.pc-a{background:var(--a);}.pc-i{background:var(--i);}.pc-u{background:var(--u);}
+.pc-e{background:var(--e);}.pc-o{background:var(--o);}
+.pc-n{background:var(--n);color:#cfd2e2;}
+.pc-x{background:rgba(160,160,180,.35);border:1px solid var(--sub);color:var(--sub);font-size:.50rem;}
+/* ── Undoトースト ── */
+#undo-toast{display:none;position:fixed;bottom:calc(var(--safe-bottom)+80px);left:50%;
+  transform:translateX(-50%);z-index:9998;
+  background:var(--panel);border:1px solid var(--accent);
+  border-radius:20px;padding:8px 16px;font-size:.76rem;color:var(--text);
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  align-items:center;gap:10px;white-space:nowrap;}
+#undo-toast.visible{display:flex;}
+#undo-toast button{background:var(--accent);color:#05111e;border:none;border-radius:12px;
+  padding:3px 10px;font-size:.72rem;cursor:pointer;font-weight:700;}
+/* ── 母音分布バー ── */
+.stat-row{display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap;}
+.stat-seg{height:8px;border-radius:4px;min-width:3px;transition:width .3s;cursor:default;}
+.stat-lbl{font-size:.60rem;color:var(--sub);}
+/* ── ヒント折りたたみ ── */
+.hint-extra{margin-top:6px;display:none;}
+.hint-extra.open{display:block;}
+.hint-toggle{background:none;border:none;color:var(--accent);font-size:.66rem;
+  cursor:pointer;padding:0 4px;vertical-align:middle;text-decoration:underline;}
+/* ── FAB ── */
+.fab{
+  position:fixed;right:18px;bottom:calc(var(--safe-bottom)+76px);
+  width:46px;height:46px;border-radius:50%;border:none;z-index:99;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#05111e;font-size:1.4rem;line-height:1;font-weight:900;cursor:pointer;
+  box-shadow:0 4px 18px color-mix(in srgb,var(--accent) 50%,transparent);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,box-shadow .15s;}
+.fab:hover{transform:scale(1.1);}
+@media(min-width:641px){.fab{bottom:20px;}}
+/* ── Quick登録ドロワー ── */
+#qreg-overlay{display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+#qreg-overlay.open{display:block;}
+#qreg-panel{
+  position:fixed;bottom:0;left:0;right:0;z-index:201;
+  background:var(--panel);border-radius:18px 18px 0 0;border-top:2px solid var(--accent);
+  padding:18px 18px calc(var(--safe-bottom)+18px);
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);}
+#qreg-panel.open{transform:translateY(0);}
+#qreg-panel h3{margin:0 0 12px;font-size:.86rem;color:var(--accent);
+  font-weight:800;letter-spacing:.08em;display:flex;justify-content:space-between;align-items:center;}
+#qreg-panel h3 button{background:none;border:none;color:var(--sub);font-size:1rem;cursor:pointer;}
+.qreg-row{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end;}
+/* ── タグ候補 ── */
+.tag-suggest{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;min-height:22px;}
+.tag-suggest .ts{
+  padding:2px 8px;border-radius:10px;font-size:.65rem;cursor:pointer;
+  background:var(--panel2);border:1px solid var(--line);color:var(--sub);}
+.tag-suggest .ts:hover{border-color:var(--accent2);color:var(--accent2);}
 </style>
 </head>
 <body>
@@ -454,10 +512,16 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
     <div class="vowel-match-bar" id="vowel-match-bar" style="margin-top:8px;display:flex;gap:6px;align-items:center;">
       <span style="font-size:.66rem;color:var(--sub);">一致方法:</span>
       <button class="match-btn active" id="match-suffix" title="入力パターンで末尾が一致するものを表示（広め）">末尾一致</button>
+      <button class="match-btn" id="match-prefix" title="入力パターンで先頭が一致するものを表示">前方一致</button>
       <button class="match-btn" id="match-exact" title="母音パターンが完全に同じものだけ表示">完全一致</button>
     </div>
     <div class="search-hint" id="search-hint">
-      母音パターン例: <code>aiai</code>（さいわい・さいかい系）　<code>ua</code>（夢・空系）　<code>oio</code>（恋心系）
+      母音パターン例: <code>aiai</code>　<code>ua</code>　<code>x</code>=っ
+      <button class="hint-toggle" id="hint-toggle">▼ 詳細</button>
+      <div class="hint-extra" id="hint-extra">
+        かな混在OK: <code>かai</code>→aai　<code>そらxo</code>→oaxo<br>
+        n=ん　x=っ　ー=前の母音を継続
+      </div>
     </div>
   </div>
 
@@ -517,6 +581,7 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
 <section id="tab-list" class="tabpanel" style="display:none;">
   <div class="panel">
     <h2>登録済みモーラ <span class="count-badge" id="list-count">0件</span></h2>
+    <div class="stat-row" id="vowel-stat-bar"></div>
     <div class="filterbar" id="vowel-filterbar"></div>
     <div class="filterbar" id="flag-filterbar">
       <button id="btn-fav-filter" style="background:var(--panel2);color:var(--sub);border:1px solid var(--line);">⭐ お気に入り</button>
@@ -587,6 +652,7 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
       <div class="field">
         <label>タグ（カンマ区切り）</label>
         <input type="text" id="in-tags" placeholder="感情,強め" style="width:110px;" autocomplete="off">
+        <div class="tag-suggest" id="tag-suggest"></div>
       </div>
       <button class="btn" id="btn-add">追加</button>
     </div>
@@ -631,6 +697,39 @@ hr.sep{border:none;border-top:1px solid var(--line);margin:11px 0;}
   </div>
 </section>
 </main>
+
+<!-- ── Undoトースト ── -->
+<div id="undo-toast">削除しました <button id="undo-btn">元に戻す</button></div>
+
+<!-- ── Quick登録FAB ── -->
+<button class="fab" id="fab-reg" title="単語を登録（+）">＋</button>
+
+<!-- ── Quick登録ドロワー ── -->
+<div id="qreg-overlay"></div>
+<div id="qreg-panel">
+  <h3>単語を登録
+    <button id="qreg-close">✕</button>
+  </h3>
+  <div class="qreg-row">
+    <div class="field">
+      <label>表記</label>
+      <input type="text" id="qreg-hyouki" placeholder="香" style="width:80px;" autocomplete="off" autocorrect="off">
+    </div>
+    <div class="field">
+      <label>読み（ひらがな/ローマ字）</label>
+      <input type="text" id="qreg-yomi" placeholder="かおり / kaori" style="width:140px;" autocomplete="off" autocorrect="off" autocapitalize="none">
+    </div>
+    <div class="field">
+      <label>タグ</label>
+      <input type="text" id="qreg-tags" placeholder="感情,強め" style="width:100px;" autocomplete="off">
+    </div>
+    <button class="btn" id="qreg-add">追加</button>
+  </div>
+  <div style="margin-top:6px;font-size:.74rem;color:var(--sub);">
+    プレビュー: <span id="qreg-preview">―</span>
+  </div>
+  <div class="status" id="qreg-status"></div>
+</div>
 <script type="text/sw-src" id="sw-src">
 
 var CACHE_NAME='mora-zukan-v3';
@@ -718,7 +817,7 @@ var CONSONANT_MAP={
   "だ":"d","ぢ":"d","づ":"d","で":"d","ど":"d",
   "ば":"b","び":"b","ぶ":"b","べ":"b","ぼ":"b",
   "ぱ":"p","ぴ":"p","ぷ":"p","ぺ":"p","ぽ":"p",
-  "ゔ":"v","ん":"n","っ":"q","ー":"-",
+  "ゔ":"v","ん":"n","っ":"x","ー":"-",
   "きゃ":"k","きゅ":"k","きょ":"k",
   "しゃ":"s","しゅ":"s","しょ":"s","しぇ":"s",
   "ちゃ":"t","ちゅ":"t","ちょ":"t","ちぇ":"t",
@@ -745,7 +844,7 @@ var GYOU_OPTIONS=[
   {code:"m",label:"ま行"},{code:"y",label:"や行"},{code:"r",label:"ら行"},
   {code:"w",label:"わ行"},{code:"g",label:"が行"},{code:"z",label:"ざ行"},
   {code:"d",label:"だ行"},{code:"b",label:"ば行"},{code:"p",label:"ぱ行"},
-  {code:"v",label:"ゔ行"},{code:"q",label:"促音（っ）"}
+  {code:"v",label:"ゔ行"},{code:"x",label:"促音（っ）"}
 ];
 var VOWEL_LABEL={a:"あ段",i:"い段",u:"う段",e:"え段",o:"お段"};
 
@@ -823,7 +922,10 @@ function extractSequence(text){
 }
 function detectVowel(y){var s=extractSequence(y||"");return s.length?s[s.length-1].vowel||null:null;}
 function effectiveVowel(it){if(it.override)return it.override==="n"?null:it.override;return detectVowel(it.yomi);}
-function vowelPatternOf(y){return extractSequence(y).map(function(u){return u.vowel||"n";}).join("");}
+function vowelPatternOf(y){return extractSequence(y).map(function(u){
+  if(u.mora==="っ")return"x";
+  return u.vowel||"n";
+}).join("");}
 function consonantPatternOf(y){return extractSequence(y).map(function(u){return u.consonant||"-";}).join("");}
 function trailingMatchCount(seqL,item){
   var seqI=extractSequence(item.yomi),count=0,la=seqL.length-1,li=seqI.length-1;
@@ -850,7 +952,7 @@ function allUniqueTags(){
 var activeVowels={},filterFav=false,filterUsed=false,activeTags={};
 var sortKey="id",sortDir="asc",PAGE_SIZE=50,listPage=0;
 var searchMode="vowel",searchPage=0,SEARCH_PAGE=30;
-var vowelExact=false;   // true=完全一致のみ  false=末尾一致（デフォルト）
+var vowelMatchMode="suffix"; // "suffix"=末尾一致  "prefix"=前方一致  "exact"=完全一致
 var lastSearchQuery="";
 
 // ── テーマ（爽やかポップ） ─────────────────────────────────────────────
@@ -945,6 +1047,67 @@ function fallbackCopy(txt,btn){
   document.body.removeChild(el);
 }
 
+// ── 混在クエリ → 詳細制約リスト変換 ──────────────────────────────────────
+// かな: {c:"k",v:"a"} のように子音+母音両方を指定
+// 母音文字 (aiueonx): {v:"a"} のように母音のみ指定
+function parseVowelQueryDetailed(raw){
+  var constraints=[],buf="";
+  function flushBuf(){
+    if(!buf)return;
+    var seq=extractSequence(buf);
+    seq.forEach(function(u){
+      if(u.mora==="っ"){constraints.push({v:"x"});}
+      else if(u.mora==="ん"){constraints.push({v:"n"});}
+      else if(u.mora==="ー"){
+        if(constraints.length)constraints.push({v:constraints[constraints.length-1].v});
+      }else if(u.vowel){
+        constraints.push({c:u.consonant||"-",v:u.vowel});
+      }
+    });
+    buf="";
+  }
+  for(var i=0;i<raw.length;i++){
+    var c=raw[i];
+    if(c.charCodeAt(0)<128){
+      flushBuf();
+      var lc=c.toLowerCase();
+      if("aiueonx".indexOf(lc)!==-1)constraints.push({v:lc});
+    }else{buf+=c;}
+  }
+  flushBuf();
+  return constraints;
+}
+// 後方互換: 母音文字列だけほしい場合
+function parseVowelQuery(raw){
+  return parseVowelQueryDetailed(raw).map(function(con){return con.v;}).join("");
+}
+// ── 制約リストと読みのマッチング ──────────────────────────────────────────
+function matchConstraints(yomi,constraints,mode){
+  var seq=extractSequence(yomi);
+  var cl=constraints.length,sl=seq.length;
+  if(!cl)return false;
+  function unitV(u){return u.mora==="っ"?"x":(u.vowel||"n");}
+  function check(si){
+    for(var k=0;k<cl;k++){
+      var u=seq[si+k],con=constraints[k];
+      if(!u)return false;
+      if(unitV(u)!==con.v)return false;
+      if(con.c!==undefined&&(u.consonant||"-")!==con.c)return false;
+    }
+    return true;
+  }
+  if(sl<cl)return false;
+  if(mode==="exact")return sl===cl&&check(0);
+  if(mode==="prefix")return check(0);
+  return check(sl-cl); // suffix
+}
+// ── 母音パターン → カラーチップHTML ─────────────────────────────────────
+function vowelPatternChipsHtml(pat){
+  return(pat||"").split("").map(function(c){
+    return'<span class="pchip pc-'+c+'" title="'+c+'">'+c+'</span>';
+  }).join("");
+}
+
 // ── 検索 ── メイン ────────────────────────────────────────────────────
 var mainSearch=document.getElementById("main-search");
 var searchClear=document.getElementById("btn-search-clear");
@@ -955,14 +1118,15 @@ var resultCards=document.getElementById("result-cards");
 var homeHero=document.getElementById("home-hero");
 var vowelMatchBar=document.getElementById("vowel-match-bar");
 var matchSuffix=document.getElementById("match-suffix");
+var matchPrefix=document.getElementById("match-prefix");
 var matchExact=document.getElementById("match-exact");
 var resultsCount=document.getElementById("results-count");
 var lyricPanel=document.getElementById("lyric-panel");
 
 var HINTS={
-  vowel:'母音パターン例: <code>aiai</code>（さいわい系）　<code>ua</code>（夢・空）　<code>oio</code>（恋心）　<code>aiueo</code>',
-  consonant:'子音パターン例: <code>skr</code>（さくら）　<code>hn</code>（花系）　あ行は<code>-</code>、んは<code>n</code>、っは<code>q</code>',
-  lyric:'歌詞（ひらがな）を入力 → モーラ解析 + 末尾母音が一致する語を表示',
+  vowel:'母音パターン例: <code>aiai</code>（さいわい系）　<code>ua</code>（夢・空）　<code>oio</code>（恋心）　<code>x</code>=っ（例: <code>ixo</code>→いっぽ系）',
+  consonant:'子音パターン例: <code>skr</code>（さくら）　<code>hn</code>（花系）　あ行は<code>-</code>、んは<code>n</code>、っは<code>x</code>',
+  lyric:'歌詞（ひらがな）を入力 → モーラ解析 + 末尾母音が一致する語を表示。<code>/</code>で行区切り',
   keyword:'表記・読み・メモ・タグで絞り込む。ひらがな・漢字・カタカナ混在可'
 };
 
@@ -998,17 +1162,16 @@ searchClear.addEventListener("click",function(){
   searchPage=0;doSearch();mainSearch.focus();
 });
 
-// 完全一致トグル
-matchSuffix.addEventListener("click",function(){
-  vowelExact=false;
-  matchSuffix.classList.add("active");matchExact.classList.remove("active");
+// 一致方法トグル
+function setMatchMode(mode){
+  vowelMatchMode=mode;
+  [matchSuffix,matchPrefix,matchExact].forEach(function(b){b.classList.remove("active");});
+  ({suffix:matchSuffix,prefix:matchPrefix,exact:matchExact})[mode].classList.add("active");
   searchPage=0;doSearch();
-});
-matchExact.addEventListener("click",function(){
-  vowelExact=true;
-  matchExact.classList.add("active");matchSuffix.classList.remove("active");
-  searchPage=0;doSearch();
-});
+}
+matchSuffix.addEventListener("click",function(){setMatchMode("suffix");});
+matchPrefix.addEventListener("click",function(){setMatchMode("prefix");});
+matchExact.addEventListener("click",function(){setMatchMode("exact");});
 
 function doSearch(){
   var raw=mainSearch.value.trim();
@@ -1021,38 +1184,49 @@ function doSearch(){
 
   var results=[];
   if(searchMode==="vowel"){
-    var q=raw.toLowerCase().replace(/[^aiueon]/g,"");
-    if(vowelExact){
-      results=DB.filter(function(it){return vowelPatternOf(it.yomi)===q;});
-    }else{
-      results=DB.filter(function(it){
-        var p=vowelPatternOf(it.yomi);return p.length>=q.length&&p.slice(-q.length)===q;
-      }).sort(function(a,b){
-        var pa=vowelPatternOf(a.yomi),pb=vowelPatternOf(b.yomi);
-        return pa.length-pb.length;
+    var constraints=parseVowelQueryDetailed(raw);
+    if(!constraints.length){
+      searchInitMsg.style.display="";searchResultsDiv.style.display="none";
+      lyricPanel.style.display="none";return;
+    }
+    results=DB.filter(function(it){return matchConstraints(it.yomi,constraints,vowelMatchMode);});
+    if(vowelMatchMode!=="exact"){
+      results.sort(function(a,b){
+        return extractSequence(a.yomi).length-extractSequence(b.yomi).length;
       });
     }
     renderSearchResults(results,null);
     lyricPanel.style.display="none";
   }else if(searchMode==="consonant"){
-    var qc=raw.toLowerCase().replace(/[^ksthnmyrwgzdbpvq\-]/g,"");
+    var qc=raw.toLowerCase().replace(/[^ksthnmyrwgzdbpvx\-]/g,"");
     results=DB.filter(function(it){return consonantPatternOf(it.yomi)===qc;});
     renderSearchResults(results,null);
     lyricPanel.style.display="none";
   }else if(searchMode==="lyric"){
-    var seq=extractSequence(raw);
-    // 歌詞解析表示
     lyricPanel.style.display="block";
+    var lines=raw.split("/").map(function(l){return l.trim();}).filter(Boolean);
+    if(!lines.length)lines=[raw];
     var seqEl=document.getElementById("rhyme-seq");seqEl.innerHTML="";
-    seq.forEach(function(u){
-      var div=document.createElement("div");div.className="unit";
-      div.innerHTML="<div class='mora'>"+escapeHtml(u.mora)+"</div>"+vowelChip(u.vowel);seqEl.appendChild(div);
+    var lastSeq=[];
+    lines.forEach(function(line,li){
+      if(lines.length>1){
+        var lbl=document.createElement("div");
+        lbl.style.cssText="font-size:.60rem;color:var(--sub);margin:4px 0 2px;width:100%;";
+        lbl.textContent="行"+(li+1)+":";seqEl.appendChild(lbl);
+      }
+      var seq=extractSequence(line);
+      if(seq.length)lastSeq=seq;
+      seq.forEach(function(u){
+        var div=document.createElement("div");div.className="unit";
+        div.innerHTML="<div class='mora'>"+escapeHtml(u.mora)+"</div>"+vowelChip(u.vowel);seqEl.appendChild(div);
+      });
     });
-    document.getElementById("rhyme-pattern").textContent=seq.map(function(u){return u.vowel||"n";}).join(" ")||"―";
-    if(!seq.length){renderSearchResults([],null);return;}
-    var lastV=seq[seq.length-1].vowel;
+    var allSeq=extractSequence(lines.join(""));
+    document.getElementById("rhyme-pattern").textContent=allSeq.map(function(u){return u.vowel||"n";}).join(" ")||"―";
+    if(!lastSeq.length){renderSearchResults([],null);return;}
+    var lastV=lastSeq[lastSeq.length-1].vowel;
     results=DB.filter(function(it){return effectiveVowel(it)===lastV;});
-    var scored=results.map(function(it){return{it:it,mc:trailingMatchCount(seq,it)};});
+    var scored=results.map(function(it){return{it:it,mc:trailingMatchCount(lastSeq,it)};});
     scored.sort(function(a,b){return b.mc-a.mc;});
     renderSearchResults(scored.map(function(s){return s.it;}),scored);
   }else{
@@ -1085,7 +1259,7 @@ function renderSearchResults(results,scored){
       '<div class="rc-hyouki">'+escapeHtml(item.hyouki)+'</div>'+
       '<div class="rc-yomi">'+escapeHtml(item.yomi)+'</div>'+
       '<div class="rc-vowel">'+vowelChip(v)+'</div>'+
-      '<div class="rc-pattern">'+escapeHtml(vowelPatternOf(item.yomi))+'</div>'+
+      '<div class="rc-pattern">'+vowelPatternChipsHtml(vowelPatternOf(item.yomi))+'</div>'+
       (matchBadge?'<div>'+matchBadge+'</div>':'')+
       '<div class="rc-tag">'+tagChipsHtml(item.tags)+'</div>'+
       '<div class="rc-actions">'+
@@ -1274,10 +1448,31 @@ function renderList(){
     var next=document.createElement("button");next.className="small";next.textContent="▶";next.disabled=listPage>=totalPages-1;
     next.addEventListener("click",function(){listPage++;renderList();});pager.appendChild(next);
   }
+  // ── 統計バー更新 ──
+  (function(){
+    var bar=document.getElementById("vowel-stat-bar");if(!bar)return;
+    bar.innerHTML="";
+    var counts={a:0,i:0,u:0,e:0,o:0,n:0};
+    var total=DB.length||1;
+    DB.forEach(function(it){var v=effectiveVowel(it)||"n";if(counts[v]!=null)counts[v]++;});
+    ["a","i","u","e","o","n"].forEach(function(v){
+      if(!counts[v])return;
+      var seg=document.createElement("div");seg.className="stat-seg";
+      seg.style.background="var(--"+v+")";seg.style.width=(counts[v]/total*120)+"px";
+      seg.title=v+"段: "+counts[v]+"語";bar.appendChild(seg);
+      var lbl=document.createElement("span");lbl.className="stat-lbl";lbl.textContent=v+":"+counts[v];bar.appendChild(lbl);
+    });
+  })();
+
   function ev(sel,fn){Array.prototype.forEach.call(body.querySelectorAll(sel),fn);}
   ev("button[data-del]",function(btn){btn.addEventListener("click",function(){
-    var id=parseInt(btn.dataset.del,10);DB=DB.filter(function(it){return it.id!==id;});
-    if(editingId===id)editingId=null;onDBChange();renderList();
+    var id=parseInt(btn.dataset.del,10);
+    var idx=DB.findIndex(function(it){return it.id===id;});
+    if(idx===-1)return;
+    lastDeleted={item:DB[idx],idx:idx};
+    DB.splice(idx,1);
+    if(editingId===id)editingId=null;
+    onDBChange();renderList();showUndoToast();
   });});
   ev("button[data-edit]",function(btn){btn.addEventListener("click",function(){editingId=parseInt(btn.dataset.edit,10);renderList();});});
   ev("button[data-cancel]",function(btn){btn.addEventListener("click",function(){editingId=null;renderList();});});
@@ -1303,6 +1498,104 @@ function renderList(){
     var item=DB.find(function(it){return it.id===parseInt(btn.dataset.copy,10);});if(item)copyText(item.hyouki,btn);
   });});
 }
+
+// ── Undo削除 ─────────────────────────────────────────────────────────
+var lastDeleted=null,undoTimer=null;
+var undoToast=document.getElementById("undo-toast");
+function showUndoToast(){
+  if(undoTimer)clearTimeout(undoTimer);
+  undoToast.classList.add("visible");
+  undoTimer=setTimeout(function(){undoToast.classList.remove("visible");lastDeleted=null;},4500);
+}
+document.getElementById("undo-btn").addEventListener("click",function(){
+  if(!lastDeleted)return;
+  DB.splice(lastDeleted.idx,0,lastDeleted.item);
+  lastDeleted=null;undoToast.classList.remove("visible");
+  onDBChange();renderList();
+});
+
+// ── タグオートコンプリート ─────────────────────────────────────────────
+var inTags=document.getElementById("in-tags");
+var tagSuggest=document.getElementById("tag-suggest");
+function renderTagSuggest(){
+  if(!tagSuggest)return;
+  var typed=(inTags.value.split(",").pop()||"").trim().toLowerCase();
+  var existing=allUniqueTags();
+  var used=(inTags.value.split(",").map(function(t){return t.trim();}));
+  var candidates=existing.filter(function(t){
+    return(typed?t.toLowerCase().indexOf(typed)===0:true)&&used.indexOf(t)===-1;
+  }).slice(0,8);
+  tagSuggest.innerHTML="";
+  candidates.forEach(function(tag){
+    var s=document.createElement("span");s.className="ts";s.textContent=tag;
+    s.addEventListener("click",function(){
+      var parts=inTags.value.split(",");
+      parts[parts.length-1]=(parts.length>1?" ":"")+tag;
+      inTags.value=parts.join(",")+", ";inTags.focus();renderTagSuggest();
+    });
+    tagSuggest.appendChild(s);
+  });
+}
+if(inTags)inTags.addEventListener("input",renderTagSuggest);
+
+// ── ヒント折りたたみ ─────────────────────────────────────────────────
+var hintToggle=document.getElementById("hint-toggle");
+var hintExtra=document.getElementById("hint-extra");
+if(hintToggle&&hintExtra){
+  hintToggle.addEventListener("click",function(){
+    var open=hintExtra.classList.toggle("open");
+    hintToggle.textContent=open?"▲ 閉じる":"▼ 詳細";
+  });
+}
+
+// ── "/" ショートカット ────────────────────────────────────────────────
+document.addEventListener("keydown",function(e){
+  if(e.key==="/"&&e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA"&&e.target.tagName!=="SELECT"){
+    e.preventDefault();
+    var searchTab=document.querySelector('nav button[data-tab="search"]');
+    if(searchTab){searchTab.click();}
+    setTimeout(function(){mainSearch.focus();},60);
+  }
+});
+
+// ── Quick登録ドロワー ─────────────────────────────────────────────────
+var qregOverlay=document.getElementById("qreg-overlay");
+var qregPanel=document.getElementById("qreg-panel");
+function openQreg(){
+  qregOverlay.classList.add("open");qregPanel.classList.add("open");
+  setTimeout(function(){document.getElementById("qreg-yomi").focus();},150);
+}
+function closeQreg(){
+  qregPanel.classList.remove("open");qregOverlay.classList.remove("open");
+}
+document.getElementById("fab-reg").addEventListener("click",openQreg);
+document.getElementById("qreg-close").addEventListener("click",closeQreg);
+qregOverlay.addEventListener("click",closeQreg);
+var qregYomi=document.getElementById("qreg-yomi");
+var qregPreview=document.getElementById("qreg-preview");
+qregYomi.addEventListener("input",function(){
+  var y=isRomaji(this.value)?romajiToHira(this.value):this.value;
+  var v=detectVowel(y);
+  qregPreview.innerHTML=v?vowelChip(v)+" "+VOWEL_LABEL[v]+"　<code style='font-size:.72rem;color:var(--accent2);'>"+vowelPatternOf(y)+"</code>":"判定不可";
+});
+document.getElementById("qreg-add").addEventListener("click",function(){
+  var ry=qregYomi.value.trim();
+  var y=isRomaji(ry)?romajiToHira(ry):ry;
+  var st=document.getElementById("qreg-status");
+  if(!y){st.textContent="読みを入力すること。";st.className="status err";return;}
+  var h=document.getElementById("qreg-hyouki").value.trim()||y;
+  if(DB.some(function(it){return it.hyouki===h&&it.yomi===y;})){
+    st.textContent="既に登録済み。";st.className="status err";return;
+  }
+  var item=normalizeItem({id:nextId++,hyouki:h,yomi:y,override:null,
+    memo:"",tags:parseTags(document.getElementById("qreg-tags").value),fav:false,used:false});
+  DB.push(item);
+  ["qreg-hyouki","qreg-yomi","qreg-tags"].forEach(function(id){document.getElementById(id).value="";});
+  qregPreview.textContent="―";
+  st.textContent="登録: 「"+item.hyouki+"」("+vowelPatternOf(y)+")";st.className="status ok";
+  onDBChange();
+  setTimeout(function(){st.textContent="";},2500);
+});
 
 // ── 登録 ──────────────────────────────────────────────────────────────
 var inYomi=document.getElementById("in-yomi");
